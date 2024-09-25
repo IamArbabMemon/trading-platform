@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "pushToGit": "git add . && git commit -m 'commit' && git push"
+    "pushToGit": "git add . && git commit -m 'commit' && git push",
+    "dev" : "nodemon src/index.js"
   },
   "keywords": [],
   "author": "",
