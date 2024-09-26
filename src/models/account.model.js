@@ -40,6 +40,19 @@ const accountSchema = new mongoose.Schema({
     enum: ['Equity','Demat', 'F&O'],
     required: true,
   },
+  
+  upiId: {
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      validator: function (v) {
+        const upiIdPattern = /^[a-zA-Z0-9.\-_]{2,32}@[a-zA-Z]{2,20}$/;
+        return upiIdPattern.test(v);
+      },
+      message: props => `${props.value} is not a valid UPI ID!`
+    }
+  },
 
   role: {
     type: String,

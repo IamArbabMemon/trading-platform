@@ -94,8 +94,23 @@ const userSchema = new mongoose.Schema({
     type: String,
     enum: ['user', 'admin'],
     default: 'user',
-  }
+  },
+
+  userZID :{
   
+    type: String,
+    required: true,
+    unique: true,
+    validate: {
+      validator: function (v) {
+        const zerodhaIdPattern = /^[A-Z0-9]{6}$/;
+        return zerodhaIdPattern.test(v);
+      },
+      message: props => `${props.value} is not a valid Zerodha ID!`
+    }
+  
+  }
+
 },{timestamps:true});
 
 const userModel = mongoose.model('User', userSchema);
