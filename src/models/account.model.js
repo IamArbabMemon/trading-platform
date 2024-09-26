@@ -14,6 +14,18 @@ const accountSchema = new mongoose.Schema({
 
       default:null
     },
+    
+    micrCode: {
+        type: String,
+        required: true,
+        validate: {
+          validator: function (v) {
+            const micrPattern = /^\d{9}$/;
+            return micrPattern.test(v);
+          },
+          message: props => `${props.value} is not a valid MICR code!`
+        }
+      },
 
     ifsc: {
       type: String,
@@ -51,7 +63,8 @@ const accountSchema = new mongoose.Schema({
         return upiIdPattern.test(v);
       },
       message: props => `${props.value} is not a valid UPI ID!`
-    }
+    },
+    default:null
   },
 
   role: {
