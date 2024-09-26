@@ -1,7 +1,8 @@
-const test = async(req,res)=>{
-    return res.send('hello');
+
+const registerUserStep1 = async(req,res,next)=>{
+    
 }
 
 export {
-    test
+    registerUserStep1
 }
