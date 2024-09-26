@@ -31,6 +31,7 @@ const userSchema = new mongoose.Schema({
   },
   address: {
     country: { type: String},
+    state:{type:String},
     //line2: { type: String },
     city: { type: String}
     // state: { type: String, required: true },
@@ -57,6 +58,7 @@ const userSchema = new mongoose.Schema({
     },
     default:null
   },
+
   pan: {
     type: String,
     required: true,
@@ -69,64 +71,31 @@ const userSchema = new mongoose.Schema({
     },
     default:null
   },
-  bankDetails: {
-    accountNumber: { 
-      type: String, 
-      required: true,
-      validate: {
-        validator: function (v) {
-          return /\d{9,18}/.test(v);  // Bank account number validation
-        },
-        message: props => `${props.value} is not a valid bank account number!`
-      },
 
-      default:null
-    },
-
-    ifsc: {
-      type: String,
-      required: true,
-      validate: {
-        validator: function (v) {
-          return /^[A-Za-z]{4}\d{7}$/.test(v);  // IFSC code format validation
-        },
-        message: props => `${props.value} is not a valid IFSC code!`
-      },
-      default:null
-    },
-    bankName: { type: String, required: true },
-    branchName: { type: String, required: true },
-  },
-  incomeProof: {
-    type: String,  // File path to the uploaded income proof
-    required: false,
-     default:null   // Required only for F&O trading
-  },
   profilePhoto: {
     type: String,  // File path to the profile photo
     required: false,
     default:null
   },
+
   signature: {
     type: String,  // File path to the signature image
     required: true,
     default:null
   },
+
   kycStatus: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending',
   },
-  accountType: {
-    type: String,
-    enum: ['Equity','Demat', 'F&O'],
-    required: true,
-  },
+  
   role: {
     type: String,
     enum: ['user', 'admin'],
     default: 'user',
   }
+  
 },{timestamps:true});
 
 const userModel = mongoose.model('User', userSchema);
