@@ -3,7 +3,7 @@
 //     service:"gmail",
 //     host: 'smtp.gmail.com',
 //     auth: {
-//         user: "arbabhere41@gmail.com",
+//         user: process.env.MAILER_EMAIL,
 //         pass: process.env.MAILER_PASS
 //     }
 // });
