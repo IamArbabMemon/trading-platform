@@ -30,20 +30,20 @@ const userSchema = new mongoose.Schema({
     required: true,
   },
   address: {
-    line1: { type: String, required: true },
-    line2: { type: String },
-    city: { type: String, required: true },
-    state: { type: String, required: true },
-    pincode: {
-      type: String,
-      required: true,
-      validate: {
-        validator: function (v) {
-          return /\d{6}/.test(v);  // Indian 6-digit pincode validation
-        },
-        message: props => `${props.value} is not a valid pincode!`
-      },
-    },
+    country: { type: String},
+    //line2: { type: String },
+    city: { type: String}
+    // state: { type: String, required: true },
+    // pincode: {
+    //   type: String,
+    //   required: true,
+    //   validate: {
+    //     validator: function (v) {
+    //       return /\d{6}/.test(v);  // Indian 6-digit pincode validation
+    //     },
+    //     message: props => `${props.value} is not a valid pincode!`
+    //   },
+    // },
   },
   aadhaar: {
     type: String,
@@ -55,6 +55,7 @@ const userSchema = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valid Aadhaar number!`
     },
+    default:null
   },
   pan: {
     type: String,
@@ -66,6 +67,7 @@ const userSchema = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valid PAN number!`
     },
+    default:null
   },
   bankDetails: {
     accountNumber: { 
@@ -77,7 +79,10 @@ const userSchema = new mongoose.Schema({
         },
         message: props => `${props.value} is not a valid bank account number!`
       },
+
+      default:null
     },
+
     ifsc: {
       type: String,
       required: true,
@@ -87,21 +92,25 @@ const userSchema = new mongoose.Schema({
         },
         message: props => `${props.value} is not a valid IFSC code!`
       },
+      default:null
     },
     bankName: { type: String, required: true },
     branchName: { type: String, required: true },
   },
   incomeProof: {
     type: String,  // File path to the uploaded income proof
-    required: false,  // Required only for F&O trading
+    required: false,
+     default:null   // Required only for F&O trading
   },
   profilePhoto: {
     type: String,  // File path to the profile photo
-    required: true,
+    required: false,
+    default:null
   },
   signature: {
     type: String,  // File path to the signature image
     required: true,
+    default:null
   },
   kycStatus: {
     type: String,
@@ -110,7 +119,7 @@ const userSchema = new mongoose.Schema({
   },
   accountType: {
     type: String,
-    enum: ['Equity', 'Commodity', 'Demat', 'F&O'],
+    enum: ['Equity','Demat', 'F&O'],
     required: true,
   },
   role: {
