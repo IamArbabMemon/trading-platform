@@ -23,6 +23,7 @@ router.route('/updateUserProfilePicture').post(upload.single('profile-pic'),upda
 /*
 
 todo: 
+0. intial registration form submission otp
 
 1. login route with otp everytime
 
