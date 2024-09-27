@@ -35,6 +35,8 @@ todo:
 
 5. middleware to check token (authentication middleware)
 
+6. logout route
+
 */
 
 export {router};
