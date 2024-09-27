@@ -88,6 +88,12 @@ const userSchema = new mongoose.Schema({
     default:null
   },
 
+  incomeProof: {
+    type: String,  // File path to the signature image
+    //required: true,
+    default:null
+  },
+
   kycStatus: {
     type: String,
     enum: ['pending', 'approved', 'rejected'],

@@ -34,7 +34,7 @@ const registerUserStep1 = async (req, res, next) => {
     
     // Send a success response with the saved user data
     return res.status(201).json({
-      message: 'User registered successfully!',
+      message: 'User Initial info of step 1 has been inserted successfully!',
       user: {username:newUser.username,userObjectID:newUser._id},
     });
   } catch (error) {
@@ -66,7 +66,7 @@ const updateAdhaar = async (req, res, next) => {
 
           const path = `${newUser.username}:${newUser._id}`
 
-         const imagePath =  await uploadImageOnSupabase(req.file,path,'Adhaar-Card-Pictures');
+         const imagePath =  await uploadImageOnSupabase(req.file,path,'AdhaarCard-Pictures');
     
          console.log(imagePath);
           
@@ -76,7 +76,7 @@ const updateAdhaar = async (req, res, next) => {
         await newUser.save();
       // Send a success response with the saved user data
       return res.status(201).json({
-        message: 'User registered successfully!',
+        message: 'User Adhaar Card Info has been inserted successfully!',
         user: {username:newUser.username,userObjectID:newUser._id},
       });
 
@@ -98,14 +98,28 @@ const updateAdhaar = async (req, res, next) => {
             throw new ErrorResponse("Please provide adhaar and userObjectID",400);
           }   
 
+          if(!req.file)
+            throw new ErrorResponse("PLEASE UPLOAD PAN CARD PICTURE . PICTURE IS MISSING",400);
+
+
         const newUser = await userModel.findById(userObjectID);
 
+        if(!newUser)
+          throw new ErrorResponse("USER IS NOT IN THE DATABASE . MUST COMPLETE INTIAL REGISTRATION BEFORE THIS STEP",400);
+
+
+        const path = `${newUser.username}:${newUser._id}`
+
+        const imagePath =  await uploadImageOnSupabase(req.file,path,'PanCard-Pictures');
+
         newUser.pan = pan;
+        
+        newUser.PanCardPicture = imagePath.path;
 
         await newUser.save();
       // Send a success response with the saved user data
       return res.status(201).json({
-        message: 'User registered successfully!',
+        message: 'User Pan Card info has been inserted succesfully!',
         user: {username:newUser.username,userObjectID:newUser._id},
       });
 
@@ -117,23 +131,116 @@ const updateAdhaar = async (req, res, next) => {
   };
 
 
+  const updateIncomeProof = async (req, res, next) => {
+    try {
+      // Destructure the fields from the request body
+     
+        const{userObjectID} = req.body;
+      
+        if (!userObjectID) {
+            throw new ErrorResponse("Please provide adhaar and userObjectID",400);
+          }   
+
+          if(!req.file)
+            throw new ErrorResponse("PLEASE UPLOAD PAN CARD PICTURE . PICTURE IS MISSING",400);
 
 
-  
+        const newUser = await userModel.findById(userObjectID);
+
+        if(!newUser)
+          throw new ErrorResponse("USER IS NOT IN THE DATABASE . MUST COMPLETE INTIAL REGISTRATION BEFORE THIS STEP",400);
+
+
+        const path = `${newUser.username}:${newUser._id}`
+
+        const imagePath =  await uploadImageOnSupabase(req.file,path,'IncomeProof-Pictures');
+
+        newUser.incomeProof = imagePath.path;
+
+        await newUser.save();
+      // Send a success response with the saved user data
+      return res.status(201).json({
+        message: 'User Income proof picture has been inserted succesfully!',
+        user: {username:newUser.username,userObjectID:newUser._id},
+      });
+
+    } catch (error) {
+      // If there are validation errors or other issues, pass them to the error handler middleware
+      next(error);
+    }
+    
+  };
+
+
+  const updateSignature = async (req, res, next) => {
+    try {
+      // Destructure the fields from the request body
+     
+        const{userObjectID} = req.body;
+      
+        if (!userObjectID) {
+            throw new ErrorResponse("Please provide adhaar and userObjectID",400);
+          }   
+
+          if(!req.file)
+            throw new ErrorResponse("PLEASE UPLOAD PAN CARD PICTURE . PICTURE IS MISSING",400);
+
+
+        const newUser = await userModel.findById(userObjectID);
+
+        if(!newUser)
+          throw new ErrorResponse("USER IS NOT IN THE DATABASE . MUST COMPLETE INTIAL REGISTRATION BEFORE THIS STEP",400);
+
+
+        const path = `${newUser.username}:${newUser._id}`
+
+        const imagePath =  await uploadImageOnSupabase(req.file,path,'Signature-Picture');
+
+        newUser.signature = imagePath.path;
+
+        await newUser.save();
+      // Send a success response with the saved user data
+      return res.status(201).json({
+        message: 'User Signature picture has been inserted succesfully!',
+        user: {username:newUser.username,userObjectID:newUser._id},
+      });
+
+    } catch (error) {
+      // If there are validation errors or other issues, pass them to the error handler middleware
+      next(error);
+    }
+    
+  };
+
+
   const uploadProfilePicture = async(req,res,next)=>{
 
-    
      try{
+    
+      const {userObjectID} = req.body;
+      
+       if(!userObjectID) 
+        throw new ErrorResponse("User ObjectID missing",400);
+
       if(!req.file)
         throw new ErrorResponse("PLEASE UPLOAD PROFILE PICTURE . PICTURE IS MISSING",400);
 
-      const path = `Humdan:87942101`
+      const newUser = await userModel.findById(userObjectID);
 
-     const imagePath =  await uploadImageOnSupabase(req.file,path,'Profile-Pictures');
+      const path = `${newUser.username}:${newUser._id}`
+
+      const imagePath =  await uploadImageOnSupabase(req.file,path,'Profile-Pictures');
 
      console.log(imagePath);
 
-      return res.json({imagePath});
+      newUser.profilePhoto = imagePath.path;
+
+      await newUser.save();
+
+      return res.status(201).json({
+        message: 'User Profile picture has been updated!',
+        user: {username:newUser.username,userObjectID:newUser._id},
+      });
 
      }catch(err){
         next(err);
@@ -142,10 +249,50 @@ const updateAdhaar = async (req, res, next) => {
   }
 
 
+  const updateProfilePicture = async(req,res,next)=>{
+
+    try{
+   
+     const {userObjectID} = req.body;
+     
+      if(!userObjectID) 
+       throw new ErrorResponse("User ObjectID missing",400);
+
+     if(!req.file)
+       throw new ErrorResponse("PLEASE UPLOAD PROFILE PICTURE . PICTURE IS MISSING",400);
+
+     const newUser = await userModel.findById(userObjectID);
+
+     const path = `${newUser.username}:${newUser._id}`
+
+     const imagePath =  await uploadImageOnSupabase(req.file,path,'Profile-Pictures');
+
+    console.log(imagePath);
+
+     newUser.profilePhoto = imagePath.path;
+
+     await newUser.save();
+
+     return res.status(201).json({
+       message: 'User Profile picture has been updated!',
+       user: {username:newUser.username,userObjectID:newUser._id},
+     });
+
+    }catch(err){
+       next(err);
+    }
+    
+ }
+
+
+
+
 
 export{
     registerUserStep1,
     updateAdhaar,
     uploadProfilePicture,
-    updatePan
+    updatePan,
+    updateIncomeProof,
+    updateSignature
 };
