@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateSignature,uploadProfilePicture} from '../controllers/user.controllers.js';
+import { registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture} from '../controllers/user.controllers.js';
 import multer from 'multer';
 const storage = multer.memoryStorage();
 
@@ -16,7 +16,7 @@ router.route('/upload-profile-picture').post(upload.single('profile-pic'),upload
 router.route('/updatePanCard').post(upload.single('panCard-pic'),updatePan);
 router.route('/updateIncomeProof').post(upload.single('incomeProof-pic'),updateIncomeProof);
 router.route('/updateUserSignaturePic').post(upload.single('userSignature-pic'),updateSignature);
-
+router.route('/updateUserProfilePicture').post(upload.single('profile-pic'),updateProfilePicture);
 
 
 
