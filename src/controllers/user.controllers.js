@@ -71,7 +71,7 @@ const updateAdhaar = async (req, res, next) => {
          console.log(imagePath);
           
         newUser.aadhaar = adhaar;
-        newUser.AdhaarCardPicture = imagePath.fullPath;
+        newUser.AdhaarCardPicture = imagePath.path;
 
         await newUser.save();
       // Send a success response with the saved user data
