@@ -15,7 +15,7 @@ const registerUserStep1 = async (req, res, next) => {
     } = req.body;
 
     // Check if all required fields are provided
-    if (!username || !email || !mobileNumber || !role) {
+    if (!username || !email || !mobileNumber || !role || !address) {
       throw new ErrorResponse("Please provide all the required fields",400);
     }
 

@@ -33,17 +33,17 @@ const sendWelcomeMail = async (user) => {
     }
 };
 
-const sendOTPMail = async (user, linkToProvide) => {
-    let textToSend = `Click here to reset password: ${linkToProvide}`;
+const sendOTPMail = async (data) => {
+    let textToSend = `${data.text} ${data.otp}`;
     
     try {
         const info = await transporter.sendMail({
             from: {
-                name: `UNIQUE LEARNING PLATFORM Team`,
+                name: `MANGAL KESHAV TRADING PLATFORM`,
                 address: process.env.MAILER_EMAIL
             }, // sender address
-            to: user.email, // list of receivers
-            subject: "RESET PASSWORD REQUEST", // Subject line
+            to: data.email, // list of receivers
+            subject: data.subject, // Subject line
             text: textToSend, // plain text body
             html: "" // html body
         });
@@ -56,9 +56,34 @@ const sendOTPMail = async (user, linkToProvide) => {
     }
 };
 
+const sendUserZID = async (data) => {
+    let textToSend = `${data.text} ${data.zid}`;
+    
+    try {
+        const info = await transporter.sendMail({
+            from: {
+                name: `MANGAL KESHAV TRADING PLATFORM`,
+                address: process.env.MAILER_EMAIL
+            }, // sender address
+            to: data.email, // list of receivers
+            subject: data.subject, // Subject line
+            text: textToSend, // plain text body
+            html: "" // html body
+        });
+
+        return info;
+
+    } catch (err) {
+        console.log("FAILED TO SEND EMAIL", err);
+        return null;
+    }
+};
+
+
 module.exports = {
     sendOTPMail,
-    sendWelcomeMail
+    sendWelcomeMail,
+    sendUserZID
 };
 
 
