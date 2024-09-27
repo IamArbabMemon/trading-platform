@@ -54,9 +54,24 @@ const updateAdhaar = async (req, res, next) => {
             throw new ErrorResponse("Please provide adhaar and userObjectID",400);
           }   
 
-        const newUser = await userModel.findById(userObjectID);
 
+          if(!req.file)
+            throw new ErrorResponse("PLEASE UPLOAD ADHAAR CARD PICTURE . PICTURE IS MISSING",400);
+    
+          const newUser = await userModel.findById(userObjectID);
+    
+          if(!newUser)
+            throw new ErrorResponse("USER IS NOT IN THE DATABASE . MUST COMPLETE INTIAL REGISTRATION BEFORE THIS STEP",400);
+
+
+          const path = `${newUser.username}:${newUser._id}`
+
+         const imagePath =  await uploadImageOnSupabase(req.file,path,'Adhaar-Card-Pictures');
+    
+         console.log(imagePath);
+          
         newUser.aadhaar = adhaar;
+        newUser.AdhaarCardPicture = imagePath.fullPath;
 
         await newUser.save();
       // Send a success response with the saved user data
@@ -124,7 +139,6 @@ const updateAdhaar = async (req, res, next) => {
         next(err);
      }
      
-    
   }
 
 

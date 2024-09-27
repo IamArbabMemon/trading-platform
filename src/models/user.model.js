@@ -100,6 +100,18 @@ const userSchema = new mongoose.Schema({
     default: 'user',
   },
 
+  AdhaarCardPicture: {
+    type: String,  // File path to the signature image
+    //required: true,
+    default:null
+  },
+
+  PanCardPicture: {
+    type: String,  // File path to the signature image
+    //required: true,
+    default:null
+  },
+
   userZID :{
   
     type: String,
