@@ -1,8 +1,10 @@
 import {Router} from 'express';
-import { registerUserStep1 } from '../controllers/user.controllers.js';
+import { registerUserStep1,updateAdhaar } from '../controllers/user.controllers.js';
+
 const router = Router();
 
-router.route('/register-step1').get(registerUserStep1);
+router.route('/register-step1').post(registerUserStep1);
+router.route('/updateAdhaar').post(updateAdhaar);
 
 
 export {router};

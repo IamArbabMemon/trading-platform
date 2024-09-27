@@ -16,6 +16,7 @@ const userSchema = new mongoose.Schema({
   },
   mobileNumber: {
     type: String,
+    trim: true,
     required: true,
     unique: true,
     validate: {
@@ -27,7 +28,8 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    trim: true,
+    default:null
   },
   address: {
     country: { type: String},
@@ -48,28 +50,30 @@ const userSchema = new mongoose.Schema({
   },
   aadhaar: {
     type: String,
-    required: true,
+    trim: true,
     unique: true,
+    // required:true,
     validate: {
       validator: function (v) {
-        return /\d{12}/.test(v);  // Aadhaar number should have 12 digits
+        return v ? /\d{12}/.test(v) : true; // Aadhaar number should have 12 digits or can be empty initially
       },
-      message: props => `${props.value} is not a valid Aadhaar number!`
+      message: props => `${props.value} is not a valid Aadhaar number!`,
     },
-    default:null
+    default: null,
   },
 
   pan: {
     type: String,
-    required: true,
     unique: true,
+    trim: true,
+    // required:true,
     validate: {
       validator: function (v) {
-        return /[A-Z]{5}[0-9]{4}[A-Z]{1}/.test(v);  // PAN number format
+        return v ? /[A-Z]{5}[0-9]{4}[A-Z]{1}/.test(v) : true; // PAN number format or can be empty initially
       },
-      message: props => `${props.value} is not a valid PAN number!`
+      message: props => `${props.value} is not a valid PAN number!`,
     },
-    default:null
+    default: null,
   },
 
   profilePhoto: {
@@ -80,7 +84,7 @@ const userSchema = new mongoose.Schema({
 
   signature: {
     type: String,  // File path to the signature image
-    required: true,
+    //required: true,
     default:null
   },
 
@@ -99,17 +103,17 @@ const userSchema = new mongoose.Schema({
   userZID :{
   
     type: String,
-    required: true,
+    //required: true,
     unique: true,
     validate: {
       validator: function (v) {
-        const zerodhaIdPattern = /^[A-Z0-9]{6}$/;
-        return zerodhaIdPattern.test(v);
+        // Check if the value is not empty and if it meets length and pattern requirements.
+        return !v || (v.length === 6 && /^[A-Z0-9]{6}$/.test(v));
       },
-      message: props => `${props.value} is not a valid Zerodha ID!`
-    }
-  
-  }
+      message: props => `${props.value} is not a valid Zerodha ID! It should be exactly 6 characters long, containing uppercase letters or numbers.`,
+    },
+    default:null
+}  
 
 },{timestamps:true});
 
