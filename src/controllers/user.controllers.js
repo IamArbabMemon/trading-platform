@@ -1,7 +1,12 @@
 import { ErrorResponse } from "../utils/errorResponse.js";
 import { userModel } from "../models/user.model.js";
 import multer from 'multer';
+import crypto from 'crypto'
 import { updateImageOnSupabase, uploadImageOnSupabase } from "../utils/uploadImageToSupabase.js";
+import { tempInitialRegistrationModel } from "../models/tempForInitialRegistration.model.js";
+import { sendOTPMail } from "../utils/mailer.js";
+import { generateOTP } from "../utils/generateOTP.js";
+import { registrationText } from "../mailTemplates.js";
 
 // Controller for registering a new user
 const registerUserStep1 = async (req, res, next) => {
@@ -21,21 +26,34 @@ const registerUserStep1 = async (req, res, next) => {
     }
 
     // Create a new user instance with the provided data
-    const newUser = await userModel.create({
+    
+    const OTP = await generateOTP();
+
+    const newUser = await tempInitialRegistrationModel.create({
       username,
       email,
       mobileNumber,
       address,
-      role
+      role,
+      OTP:OTP
     });
 
 
+    const data = {
+      text : registrationText,
+      otp:OTP,
+      subject:"OTP FOR REGISTRATION PROCESS",
+      email:email
+    }
 
+    const result = await sendOTPMail(data);
     
-    // Send a success response with the saved user data
+    if(!result)
+      throw new ErrorResponse("FAILED TO SEND OTP",500);
+
+       // Send a success response with the saved user data
     return res.status(201).json({
-      message: 'User Initial info of step 1 has been inserted successfully!',
-      user: {username:newUser.username,userObjectID:newUser._id},
+      message: 'OTP HAS BEEN SENT SUCCESSFULLY!'
     });
   } catch (error) {
     // If there are validation errors or other issues, pass them to the error handler middleware

@@ -80,7 +80,7 @@ const sendUserZID = async (data) => {
 };
 
 
-module.exports = {
+export {
     sendOTPMail,
     sendWelcomeMail,
     sendUserZID
