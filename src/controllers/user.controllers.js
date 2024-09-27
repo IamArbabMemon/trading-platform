@@ -1,6 +1,7 @@
 import { ErrorResponse } from "../utils/errorResponse.js";
 import { userModel } from "../models/user.model.js";
-
+import multer from 'multer';
+import { uploadImageOnSupabase } from "../utils/uploadImageToSupabase.js";
 
 // Controller for registering a new user
 const registerUserStep1 = async (req, res, next) => {
@@ -102,7 +103,35 @@ const updateAdhaar = async (req, res, next) => {
 
 
 
+
+  
+  const uploadProfilePicture = async(req,res,next)=>{
+
+    
+     try{
+      if(!req.file)
+        throw new ErrorResponse("PLEASE UPLOAD PROFILE PICTURE . PICTURE IS MISSING",400);
+
+      const path = `Humdan:87942101`
+
+     const imagePath =  await uploadImageOnSupabase(req.file,path,'Profile-Pictures');
+
+     console.log(imagePath);
+
+      return res.json({imagePath});
+
+     }catch(err){
+        next(err);
+     }
+     
+    
+  }
+
+
+
 export{
     registerUserStep1,
-    updateAdhaar
+    updateAdhaar,
+    uploadProfilePicture,
+    updatePan
 };
