@@ -16,8 +16,24 @@ router.route('/upload-profile-picture').post(upload.single('profile-pic'),upload
 router.route('/updatePanCard').post(upload.single('panCard-pic'),updatePan);
 router.route('/updateIncomeProof').post(upload.single('incomeProof-pic'),updateIncomeProof);
 router.route('/updateUserSignaturePic').post(upload.single('userSignature-pic'),updateSignature);
+
+// route to be accessed by logged in user those who have token for authentication
 router.route('/updateUserProfilePicture').post(upload.single('profile-pic'),updateProfilePicture);
 
+/*
 
+todo: 
+
+1. login route with otp everytime
+
+2. forget password
+
+3. set password
+
+4. update user details
+
+5. middleware to check token (authentication middleware)
+
+*/
 
 export {router};
