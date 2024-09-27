@@ -1,7 +1,7 @@
 import { ErrorResponse } from "../utils/errorResponse.js";
 import { userModel } from "../models/user.model.js";
 import multer from 'multer';
-import { uploadImageOnSupabase } from "../utils/uploadImageToSupabase.js";
+import { updateImageOnSupabase, uploadImageOnSupabase } from "../utils/uploadImageToSupabase.js";
 
 // Controller for registering a new user
 const registerUserStep1 = async (req, res, next) => {
@@ -263,9 +263,9 @@ const updateAdhaar = async (req, res, next) => {
 
      const newUser = await userModel.findById(userObjectID);
 
-     const path = `${newUser.username}:${newUser._id}`
+     const path = newUser.profilePhoto;
 
-     const imagePath =  await uploadImageOnSupabase(req.file,path,'Profile-Pictures');
+     const imagePath =  await updateImageOnSupabase(req.file,path,'Profile-Pictures');
 
     console.log(imagePath);
 
@@ -287,12 +287,12 @@ const updateAdhaar = async (req, res, next) => {
 
 
 
-
 export{
     registerUserStep1,
     updateAdhaar,
     uploadProfilePicture,
     updatePan,
     updateIncomeProof,
-    updateSignature
+    updateSignature,
+    updateProfilePicture
 };
