@@ -60,9 +60,34 @@ try {
     console.log('Error uploading video:', error.message);
 }
   
+}
+
+
+
+const updateImageOnSupabase = async(imageFile,path,bucketName)=>{
+
+  try {
+      const { buffer, originalname, mimetype } = imageFile; // Retrieve buffer, name, and content type
+      
+
+      
+      const { error } = await supabase.storage
+      .from(bucketName)
+      .upload(path, buffer, { upsert: true }); // upsert: true will overwrite existing file
+  
+    if (error) {
+      throw new ErrorResponse('Failed to update the image',500);
+    }
+
+      return data;
+  
+    } catch (error) {
+      console.log('Error uploading video:', error.message);
+  }
 
 }
 
   export {
-    uploadImageOnSupabase
+    uploadImageOnSupabase,
+    updateImageOnSupabase
   }
