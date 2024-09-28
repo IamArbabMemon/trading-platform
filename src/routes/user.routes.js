@@ -1,6 +1,7 @@
 import {Router} from 'express';
-import { finalizeIntitialRegistration, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture} from '../controllers/user.controllers.js';
+import { finalizeIntitialRegistration, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture, userLoginStep1, userLoginStep2} from '../controllers/user.controllers.js';
 import multer from 'multer';
+import { checkAuthentication } from '../middlewares/authentication.middleware.js';
 const storage = multer.memoryStorage();
 
 const upload = multer({
@@ -33,8 +34,14 @@ router.route('/updateAdhaar').post(upload.single('adhaar-pic'), updateAdhaar);
 router.route('/updateIncomeProof').post(upload.single('incomeProof-pic'), updateIncomeProof);
 router.route('/updateUserSignaturePic').post(upload.single('userSignature-pic'), updateSignature);
 
+router.route('/login/step1',userLoginStep1);
+router.route('/login/step2',userLoginStep2);
+
+
+
 // Authenticated user actions
-router.route('/updateUserProfilePicture').post(upload.single('profile-pic'), updateProfilePicture);
+router.route('/updateUserProfilePicture').post(checkAuthentication,upload.single('profile-pic'), updateProfilePicture);
+
 
 router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
 
@@ -43,7 +50,6 @@ router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
 todo: 
 
 2. forget password
-
 
 4. update user details
 
