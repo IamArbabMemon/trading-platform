@@ -29,6 +29,8 @@ const registerUserStep1 = async (req, res, next) => {
     
     const OTP = await generateOTP();
 
+    console.log(OTP);
+
     const newUser = await tempInitialRegistrationModel.create({
       username,
       email,
@@ -95,7 +97,7 @@ const updateAdhaar = async (req, res, next) => {
       // Send a success response with the saved user data
       return res.status(201).json({
         message: 'User Adhaar Card Info has been inserted successfully!',
-        user: {username:newUser.username,userObjectID:newUser._id},
+        user: {username:newUser.username,userObjectID:newUser._id.toString()},
       });
 
     } catch (error) {
@@ -138,7 +140,7 @@ const updateAdhaar = async (req, res, next) => {
       // Send a success response with the saved user data
       return res.status(201).json({
         message: 'User Pan Card info has been inserted succesfully!',
-        user: {username:newUser.username,userObjectID:newUser._id},
+        user: {username:newUser.username,userObjectID:newUser._id.toString()},
       });
 
     } catch (error) {
@@ -179,7 +181,7 @@ const updateAdhaar = async (req, res, next) => {
       // Send a success response with the saved user data
       return res.status(201).json({
         message: 'User Income proof picture has been inserted succesfully!',
-        user: {username:newUser.username,userObjectID:newUser._id},
+        user: {username:newUser.username,userObjectID:newUser._id.toString()},
       });
 
     } catch (error) {
@@ -220,7 +222,7 @@ const updateAdhaar = async (req, res, next) => {
       // Send a success response with the saved user data
       return res.status(201).json({
         message: 'User Signature picture has been inserted succesfully!',
-        user: {username:newUser.username,userObjectID:newUser._id},
+        user: {username:newUser.username,userObjectID:newUser._id.toString()},
       });
 
     } catch (error) {
@@ -257,7 +259,7 @@ const updateAdhaar = async (req, res, next) => {
 
       return res.status(201).json({
         message: 'User Profile picture has been updated!',
-        user: {username:newUser.username,userObjectID:newUser._id},
+        user: {username:newUser.username,userObjectID:newUser._id.toString()},
       });
 
      }catch(err){
@@ -293,7 +295,7 @@ const updateAdhaar = async (req, res, next) => {
 
      return res.status(201).json({
        message: 'User Profile picture has been updated!',
-       user: {username:newUser.username,userObjectID:newUser._id},
+       user: {username:newUser.username,userObjectID:newUser._id.toString()},
      });
 
     }catch(err){
@@ -302,7 +304,42 @@ const updateAdhaar = async (req, res, next) => {
     
  }
 
+const finalizeIntitialRegistration = async(req,res,next)=>{
 
+      try {
+        
+        const{email,OTP} = req.body;
+
+        if(!email || !OTP)
+          throw new ErrorResponse("email OR OTP is missing",400);          
+
+        const findUser = await tempInitialRegistrationModel.findOne({email:email});
+
+        if(!findUser)
+          throw new ErrorResponse("USER NOT FOUND",404);          
+
+        if(!(findUser.OTP === OTP))
+          throw new ErrorResponse("OTP NOT MATCHED",400);          
+
+        const newUser = await userModel.create({
+          username:findUser.username,
+          mobileNumber:findUser.mobileNumber,
+          email:findUser.email,
+          address:findUser.address,
+          role:findUser.role
+        });
+
+
+        return res.status(201).json({
+          message: 'User Initial Regisration has been completed!',
+          user: {username:newUser.username,userObjectID:newUser._id.toString()},
+        });
+
+      } catch (error) {
+        
+      }
+
+}
 
 
 export{

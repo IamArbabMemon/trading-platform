@@ -49,7 +49,7 @@ const tempModelSchema = new mongoose.Schema({
 
 },{timestamps:true});
 
-const tempInitialRegistrationModel = mongoose.model('temp-initial-registration', tempModelSchema);
+const tempInitialRegistrationModel = mongoose.model('tempInitialRegistration', tempModelSchema);
 
 export{
    tempInitialRegistrationModel
