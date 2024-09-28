@@ -88,7 +88,7 @@ const updateAdhaar = async (req, res, next) => {
 
          const imagePath =  await uploadImageOnSupabase(req.file,path,'AdhaarCard-Pictures');
     
-         const publicPath = await getPublicImageURL('AdhaarCard-Pictures',imagePath);
+         const publicPath = await getPublicImageURL('AdhaarCard-Pictures',imagePath.path);
 
          if(!publicPath)
           throw new ErrorResponse("Error occured in getting the Adhaar Card picture public url from supabase",500);
@@ -137,8 +137,11 @@ const updateAdhaar = async (req, res, next) => {
 
         const imagePath =  await uploadImageOnSupabase(req.file,path,'PanCard-Pictures');
 
-    
-        const publicPath = await getPublicImageURL('PanCard-Pictures',imagePath);
+    console.log(imagePath.path);
+
+        const publicPath = await getPublicImageURL('PanCard-Pictures',imagePath.path);
+
+    console.log(publicPath);
 
         if(!publicPath)
          throw new ErrorResponse("Error occured in getting the PAN Card picture public url from supabase",500);
@@ -187,7 +190,7 @@ const updateAdhaar = async (req, res, next) => {
 
         const imagePath =  await uploadImageOnSupabase(req.file,path,'IncomeProof-Pictures');
 
-        const publicPath = await getPublicImageURL('IncomeProof-Pictures',imagePath);
+        const publicPath = await getPublicImageURL('IncomeProof-Pictures',imagePath.path);
 
         if(!publicPath)
          throw new ErrorResponse("Error occured in getting the Income Proof picture public url from supabase",500);
@@ -234,7 +237,7 @@ const updateAdhaar = async (req, res, next) => {
 
         const imagePath =  await uploadImageOnSupabase(req.file,path,'Signature-Picture');
 
-        const publicPath = await getPublicImageURL('Signature-Picture',imagePath);
+        const publicPath = await getPublicImageURL('Signature-Picture',imagePath.path);
 
         if(!publicPath)
          throw new ErrorResponse("Error occured in getting the Signature picture public url from supabase",500);
@@ -277,7 +280,7 @@ const updateAdhaar = async (req, res, next) => {
 
        console.log(imagePath); 
 
-       const publicPath = await getPublicImageURL('Profile-Pictures',imagePath);
+       const publicPath = await getPublicImageURL('Profile-Pictures',imagePath.path);
 
        if(!publicPath)
         throw new ErrorResponse("Error occured in getting the proflie picutere public url from supabase",500);
@@ -366,8 +369,8 @@ const finalizeIntitialRegistration = async(req,res,next)=>{
           user: {username:newUser.username,userObjectID:newUser._id.toString()},
         });
 
-      } catch (error) {
-        
+      } catch (err) {
+        next(err);
       }
 
 }
