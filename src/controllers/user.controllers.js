@@ -29,17 +29,7 @@ const registerUserStep1 = async (req, res, next) => {
     
     const OTP = await generateOTP();
 
-    console.log(OTP);
-
-    const newUser = await tempInitialRegistrationModel.create({
-      username,
-      email,
-      mobileNumber,
-      address,
-      role,
-      OTP:OTP
-    });
-
+    console.log("OTP FOR INITIAL REGISTRATION : ",OTP);
 
     const data = {
       text : registrationText,
@@ -52,6 +42,16 @@ const registerUserStep1 = async (req, res, next) => {
     
     if(!result)
       throw new ErrorResponse("FAILED TO SEND OTP",500);
+
+    
+    const newUser = await tempInitialRegistrationModel.create({
+      username,
+      email,
+      mobileNumber,
+      address,
+      role,
+      OTP:OTP
+    });
 
        // Send a success response with the saved user data
     return res.status(201).json({
