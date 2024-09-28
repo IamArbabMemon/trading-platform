@@ -27,8 +27,9 @@ router.route('/finalizeInitialRegistration').post(finalizeIntitialRegistration);
 
 // Document uploads
 router.route('/upload-profile-picture').post(upload.single('profile-pic'), uploadProfilePicture);
-router.route('/updateAdhaar').post(upload.single('adhaar-pic'), updateAdhaar);
 router.route('/updatePanCard').post(upload.single('panCard-pic'), updatePan);
+router.route('/updateAdhaar').post(upload.single('adhaar-pic'), updateAdhaar);
+
 router.route('/updateIncomeProof').post(upload.single('incomeProof-pic'), updateIncomeProof);
 router.route('/updateUserSignaturePic').post(upload.single('userSignature-pic'), updateSignature);
 

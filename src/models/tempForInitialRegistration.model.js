@@ -10,7 +10,6 @@ const tempModelSchema = new mongoose.Schema({
       email: {
         type: String,
         required: true,
-        unique: true,
         trim: true,
         lowercase: true,
       },
@@ -18,7 +17,7 @@ const tempModelSchema = new mongoose.Schema({
         type: String,
         trim: true,
         required: true,
-        unique: true,
+        // unique: true,
         validate: {
           validator: function (v) {
             return /\d{10}/.test(v);  // Indian 10-digit mobile number validation
@@ -39,6 +38,12 @@ const tempModelSchema = new mongoose.Schema({
         type: String,
         enum: ['user', 'admin'],
         default: 'user',
+      },
+
+      password:{
+        type:String,
+        required:true,
+        // unique:true,
       },
 
       OTP:{

@@ -1,3 +1,4 @@
+import jwt from 'jsonwebtoken';
 import { ErrorResponse } from "../utils/errorResponse.js";
 import { userModel } from "../models/user.model.js";
 import multer from 'multer';
@@ -6,8 +7,9 @@ import { getPublicImageURL, updateImageOnSupabase, uploadImageOnSupabase } from 
 import { tempInitialRegistrationModel } from "../models/tempForInitialRegistration.model.js";
 import { sendOTPMail } from "../utils/mailer.js";
 import { generateOTP } from "../utils/generateOTP.js";
-import { registrationText } from "../mailTemplates.js";
-
+import { loginOTPText, registrationText } from "../mailTemplates.js";
+import bcrypt from 'bcryptjs'
+import {tempForLoginModel } from "../models/tempForLogin.model.js";
 // Controller for registering a new user
 const registerUserStep1 = async (req, res, next) => {
   try {
@@ -18,10 +20,11 @@ const registerUserStep1 = async (req, res, next) => {
       mobileNumber,
       address,
       role,
+      password
     } = req.body;
 
     // Check if all required fields are provided
-    if (!username || !email || !mobileNumber || !role || !address) {
+    if (!username || !email || !mobileNumber || !role || !address || !password) {
       throw new ErrorResponse("Please provide all the required fields",400);
     }
 
@@ -43,13 +46,15 @@ const registerUserStep1 = async (req, res, next) => {
     if(!result)
       throw new ErrorResponse("FAILED TO SEND OTP",500);
 
-    
+    const hashedPassword = await bcrypt.hash(password,10);
+
     const newUser = await tempInitialRegistrationModel.create({
       username,
       email,
       mobileNumber,
       address,
       role,
+      password:hashedPassword,
       OTP:OTP
     });
 
@@ -376,6 +381,96 @@ const finalizeIntitialRegistration = async(req,res,next)=>{
 }
 
 
+const userLoginStep1 = async(req,res,next)=>{
+
+  try {
+    const {userZID,password} = req.body;
+  
+    if(!userZID || !password)
+        throw new ErrorResponse("Login Credential missing",400);
+
+    const user= await userModel.findOne({userZID:userZID});
+
+    if(!user)
+      throw new ErrorResponse("User not found",404);
+
+    const passIsCorrect = await bcrypt.compare(password,user.password);
+
+    if(!passIsCorrect)
+      throw new ErrorResponse("Incorrect Password",400);
+
+    const OTP = await generateOTP();
+
+    const result = await sendOTPMail({text:loginOTPText,OTP:OTP,email:user.email,subject:"Login OTP"});
+
+    if(!result)
+      throw new ErrorResponse("FAILED TO SEND OTP",500);
+
+    await tempForLoginModel.create({
+          userZID:userZID,
+          OTP:OTP
+    });
+
+    return res.status(201).json({
+      message: 'LOGIN OTP HAS BEEN SENT SUCCESSFULLY!'
+    });
+
+
+  } catch (err) {
+    next(err);
+  }
+
+
+}
+
+
+
+
+const userLoginStep2 = async(req,res,next)=>{
+
+  try {
+    const {userZID,OTP} = req.body;
+  
+    if(!userZID || !OTP)
+        throw new ErrorResponse("OTP OR USERZID IS MISSING",400);
+    
+      const findUser = await tempForLoginModel.findOne({userZID:userZID});
+
+      if(!findUser)
+        throw new ErrorResponse("User credentials are missing USERZID not found",400);
+
+      if(!(findUser.OTP === OTP))
+        throw new ErrorResponse("OTP NOT MATCHED",400);          
+
+
+        const detailedUser = await userModel.findOne({userZID:userZID});
+    
+      // const token = await jwt.sign({username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID}, process.env.JWT_SECRET_KEY);
+
+      const token = await jwt.sign(
+        {
+          username: detailedUser.username,
+          userRole: detailedUser.role,
+          userZID: detailedUser.userZID
+        },
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: '1h' } // Set the token to expire in 1 hour
+      );
+      
+         
+      return res.cookie('access-token', token, {
+         httpOnly: true,
+     }).json({message:"Access token has been set",token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID}});
+
+       
+  } catch (err) {
+    next(err);
+  }
+
+
+}
+
+
 export{
     registerUserStep1,
     updateAdhaar,
@@ -384,5 +479,7 @@ export{
     updateIncomeProof,
     updateSignature,
     updateProfilePicture,
-    finalizeIntitialRegistration
+    finalizeIntitialRegistration,
+    userLoginStep1,
+    userLoginStep2
 };
