@@ -34,7 +34,7 @@ try {
 
     if(!existingBucket){
         const { data: newBucket, error: createError } = await supabase.storage.createBucket(bucketName, {
-            public: false, // Set to false to keep the bucket private (only accessible through API)
+            public: true, // Set to false to keep the bucket private (only accessible through API)
           });
 
           console.log(newBucket);
@@ -62,7 +62,18 @@ try {
   
 }
 
+const getPublicImageURL = async(bucketName,path)=>{
+ 
+  const {data,error} = await supabase.storage.from(bucketName).getPublicUrl(path);
+  
+  if(error){
+      console.log(error);
+      return null;
+}
 
+return data.publicUrl;
+
+}
 
 const updateImageOnSupabase = async(imageFile,path,bucketName)=>{
 

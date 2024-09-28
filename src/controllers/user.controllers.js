@@ -329,6 +329,7 @@ const finalizeIntitialRegistration = async(req,res,next)=>{
           role:findUser.role
         });
 
+        await tempInitialRegistrationModel.deleteOne({email:email});
 
         return res.status(201).json({
           message: 'User Initial Regisration has been completed!',
@@ -349,5 +350,6 @@ export{
     updatePan,
     updateIncomeProof,
     updateSignature,
-    updateProfilePicture
+    updateProfilePicture,
+    finalizeIntitialRegistration
 };
