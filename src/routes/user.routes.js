@@ -50,9 +50,12 @@ router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
 
 todo: 
 
+1. link bank account manually or upi
+
 2. forget password
 
 4. update user details
+
 
 */
 
