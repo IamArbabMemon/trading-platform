@@ -468,7 +468,28 @@ const userLoginStep2 = async(req,res,next)=>{
   }
 
 
-}
+};
+
+const userLogout = async(req,res,next)=>{
+  try{
+
+           if(!req.user)
+              throw new ErrorResponse('User is not logged in or authenticated',400);
+
+             // Clear the token from the cookie
+             res.clearCookie('token', {
+              httpOnly: true
+          });
+  
+          // Send response confirming logout
+          return res.status(200).json({ message: "You have successfully logged out." });
+
+
+  }catch(err){
+     next(err);
+  }
+};
+
 
 
 export{
@@ -481,5 +502,6 @@ export{
     updateProfilePicture,
     finalizeIntitialRegistration,
     userLoginStep1,
-    userLoginStep2
+    userLoginStep2,
+    userLogout
 };

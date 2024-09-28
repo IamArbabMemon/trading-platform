@@ -41,19 +41,12 @@ router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
 /*
 
 todo: 
-0. intial registration form submission otp
-
-1. login route with otp everytime
 
 2. forget password
 
-3. set password
 
 4. update user details
 
-5. middleware to check token (authentication middleware)
-
-6. logout route
 
 */
 

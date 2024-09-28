@@ -7,7 +7,9 @@ const tempModelSchema = new mongoose.Schema({
         trim:true
     },
       OTP:{
-        type:String
+        type:String,
+        required:true,
+        trim:true
       }
     
 
