@@ -100,5 +100,6 @@ const updateImageOnSupabase = async(imageFile,path,bucketName)=>{
 
   export {
     uploadImageOnSupabase,
-    updateImageOnSupabase
+    updateImageOnSupabase,
+    getPublicImageURL
   }

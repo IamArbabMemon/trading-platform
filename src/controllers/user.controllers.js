@@ -2,7 +2,7 @@ import { ErrorResponse } from "../utils/errorResponse.js";
 import { userModel } from "../models/user.model.js";
 import multer from 'multer';
 import crypto from 'crypto'
-import { updateImageOnSupabase, uploadImageOnSupabase } from "../utils/uploadImageToSupabase.js";
+import { getPublicImageURL, updateImageOnSupabase, uploadImageOnSupabase } from "../utils/uploadImageToSupabase.js";
 import { tempInitialRegistrationModel } from "../models/tempForInitialRegistration.model.js";
 import { sendOTPMail } from "../utils/mailer.js";
 import { generateOTP } from "../utils/generateOTP.js";
@@ -88,10 +88,15 @@ const updateAdhaar = async (req, res, next) => {
 
          const imagePath =  await uploadImageOnSupabase(req.file,path,'AdhaarCard-Pictures');
     
+         const publicPath = await getPublicImageURL('AdhaarCard-Pictures',imagePath);
+
+         if(!publicPath)
+          throw new ErrorResponse("Error occured in getting the Adhaar Card picture public url from supabase",500);
+  
          console.log(imagePath);
           
         newUser.aadhaar = adhaar;
-        newUser.AdhaarCardPicture = imagePath.path;
+        newUser.AdhaarCardPicture = publicPath;
 
         await newUser.save();
       // Send a success response with the saved user data
@@ -132,9 +137,16 @@ const updateAdhaar = async (req, res, next) => {
 
         const imagePath =  await uploadImageOnSupabase(req.file,path,'PanCard-Pictures');
 
+    
+        const publicPath = await getPublicImageURL('PanCard-Pictures',imagePath);
+
+        if(!publicPath)
+         throw new ErrorResponse("Error occured in getting the PAN Card picture public url from supabase",500);
+
+        
         newUser.pan = pan;
         
-        newUser.PanCardPicture = imagePath.path;
+        newUser.PanCardPicture = publicPath;
 
         await newUser.save();
       // Send a success response with the saved user data
@@ -175,7 +187,13 @@ const updateAdhaar = async (req, res, next) => {
 
         const imagePath =  await uploadImageOnSupabase(req.file,path,'IncomeProof-Pictures');
 
-        newUser.incomeProof = imagePath.path;
+        const publicPath = await getPublicImageURL('IncomeProof-Pictures',imagePath);
+
+        if(!publicPath)
+         throw new ErrorResponse("Error occured in getting the Income Proof picture public url from supabase",500);
+
+
+        newUser.incomeProof = publicPath;
 
         await newUser.save();
       // Send a success response with the saved user data
@@ -216,7 +234,13 @@ const updateAdhaar = async (req, res, next) => {
 
         const imagePath =  await uploadImageOnSupabase(req.file,path,'Signature-Picture');
 
-        newUser.signature = imagePath.path;
+        const publicPath = await getPublicImageURL('Signature-Picture',imagePath);
+
+        if(!publicPath)
+         throw new ErrorResponse("Error occured in getting the Signature picture public url from supabase",500);
+
+
+        newUser.signature = publicPath;
 
         await newUser.save();
       // Send a success response with the saved user data
@@ -251,9 +275,15 @@ const updateAdhaar = async (req, res, next) => {
 
       const imagePath =  await uploadImageOnSupabase(req.file,path,'Profile-Pictures');
 
-     console.log(imagePath);
+       console.log(imagePath); 
 
-      newUser.profilePhoto = imagePath.path;
+       const publicPath = await getPublicImageURL('Profile-Pictures',imagePath);
+
+       if(!publicPath)
+        throw new ErrorResponse("Error occured in getting the proflie picutere public url from supabase",500);
+
+
+      newUser.profilePhoto = publicPath;
 
       await newUser.save();
 
@@ -289,9 +319,9 @@ const updateAdhaar = async (req, res, next) => {
 
     console.log(imagePath);
 
-     newUser.profilePhoto = imagePath.path;
+    //  newUser.profilePhoto = imagePath.path;
 
-     await newUser.save();
+    //  await newUser.save();
 
      return res.status(201).json({
        message: 'User Profile picture has been updated!',
