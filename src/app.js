@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 app.use('/api/v1/user',userRouter);
 
-
+app.use('/api/not',(req,res)=>res.send("got you "))
 
 app.use(errorHandler);
 

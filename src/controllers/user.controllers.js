@@ -7,9 +7,10 @@ import { getPublicImageURL, updateImageOnSupabase, uploadImageOnSupabase } from 
 import { tempInitialRegistrationModel } from "../models/tempForInitialRegistration.model.js";
 import { sendOTPMail } from "../utils/mailer.js";
 import { generateOTP } from "../utils/generateOTP.js";
-import { loginOTPText, registrationText } from "../mailTemplates.js";
+import { forgetPasswordText, loginOTPText, registrationText } from "../mailTemplates.js";
 import bcrypt from 'bcryptjs'
 import {tempForLoginModel } from "../models/tempForLogin.model.js";
+import { tempForForgetPasswordModel } from '../models/tempForForgetPassword.model.js';
 // Controller for registering a new user
 const registerUserStep1 = async (req, res, next) => {
   try {
@@ -401,7 +402,7 @@ const userLoginStep1 = async(req,res,next)=>{
 
     const OTP = await generateOTP();
 
-    const result = await sendOTPMail({text:loginOTPText,OTP:OTP,email:user.email,subject:"Login OTP"});
+    const result = await sendOTPMail({text:loginOTPText,otp:OTP,email:user.email,subject:"Login OTP"});
 
     if(!result)
       throw new ErrorResponse("FAILED TO SEND OTP",500);
@@ -451,7 +452,8 @@ const userLoginStep2 = async(req,res,next)=>{
         {
           username: detailedUser.username,
           userRole: detailedUser.role,
-          userZID: detailedUser.userZID
+          userZID: detailedUser.userZID,
+          userObjectID : detailedUser._id.toString()
         },
         process.env.JWT_SECRET_KEY,
         { expiresIn: '1h' } // Set the token to expire in 1 hour
@@ -460,7 +462,7 @@ const userLoginStep2 = async(req,res,next)=>{
          
       return res.cookie('access-token', token, {
          httpOnly: true,
-     }).json({message:"Access token has been set",token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID}});
+     }).json({message:"Access token has been set",token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString()}});
 
        
   } catch (err) {
@@ -491,6 +493,36 @@ const userLogout = async(req,res,next)=>{
 };
 
 
+const forgetPasswordStep1 = async(req,res,next)=>{
+
+    try {
+      const {userZID} = req.body;
+  
+      const findUser = await userModel.findOne({userZID:userZID});
+  
+      if(!findUser)
+        throw new ErrorResponse("User not found or wrong user ID",404);
+  
+      const OTP = await generateOTP();
+  
+       const result = await sendOTPMail({text:forgetPasswordText,email:findUser.email,otp:OTP,subject:"FORGET PASSWORD OTP"});
+       
+       if(!result)
+        throw new ErrorResponse("Failed to send OTP email",500);
+  
+       await tempForForgetPasswordModel.create({
+        userZID:userZID,
+        OTP:OTP
+       });
+
+       return res.status(200).json({message:"OTP HAS BEEN SENT"});
+
+    } catch (err) {
+      next(err);
+    }
+   
+};
+
 
 export{
     registerUserStep1,
@@ -503,5 +535,6 @@ export{
     finalizeIntitialRegistration,
     userLoginStep1,
     userLoginStep2,
-    userLogout
+    userLogout,
+    forgetPasswordStep1
 };
