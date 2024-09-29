@@ -15,10 +15,9 @@ app.use(cookieParser());
 
 app.use('/api/v1/user',userRouter);
 
-
+app.use('/hello',(req,res)=>res.send())
 
 app.use(errorHandler);
-
 
 
 export {app}

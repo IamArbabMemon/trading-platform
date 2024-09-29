@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { finalizeIntitialRegistration, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture, userLoginStep1, userLoginStep2, userLogout} from '../controllers/user.controllers.js';
+import { finalizeIntitialRegistration, forgetPasswordStep1, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture, userLoginStep1, userLoginStep2, userLogout} from '../controllers/user.controllers.js';
 import multer from 'multer';
 import { checkAuthentication } from '../middlewares/authentication.middleware.js';
 const storage = multer.memoryStorage();
@@ -33,6 +33,8 @@ router.route('/updateAdhaar').post(upload.single('adhaar-pic'), updateAdhaar);
 
 router.route('/updateIncomeProof').post(upload.single('incomeProof-pic'), updateIncomeProof);
 router.route('/updateUserSignaturePic').post(upload.single('userSignature-pic'), updateSignature);
+
+router.route('/forgetPasswordStep1').post(forgetPasswordStep1);
 
 router.route('/login/step1',userLoginStep1);
 router.route('/login/step2',userLoginStep2);
