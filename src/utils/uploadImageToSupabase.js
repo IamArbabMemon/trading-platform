@@ -23,7 +23,11 @@ const uploadImageOnSupabase = async(imageFile,path,bucketName)=>{
 
 try {
     const { buffer, originalname, mimetype } = imageFile; // Retrieve buffer, name, and content type
-    
+    console.log(" I am inside uploading ")
+
+    if(!path)
+      throw new ErrorResponse("Error in uplaoding picture in supabase",500);
+      
 
     const { data: buckets, error: listError } = await supabase.storage.listBuckets();
 
@@ -52,26 +56,39 @@ try {
         upsert: false, // Do not overwrite existing file with the same name
       });
 
-    if (error) throw new ErrorResponse(error.message,500);
+    if (error) throw new ErrorResponse(error,500);
 
     return data;
 
   } catch (error) {
     console.log('Error uploading Picture on supabase:', error.message);
+    return error;
 }
   
 }
 
 const getPublicImageURL = async(bucketName,path)=>{
  
-  const {data,error} = await supabase.storage.from(bucketName).getPublicUrl(path);
-  
-  if(error){
-      console.log(error);
-      return null;
-}
+    
+ 
+  try {
 
-return data.publicUrl;
+    console.log("I am in getting path")
+
+    if(!path)
+      throw new ErrorResponse("Error in uploading and getting the picture from supabase",500);
+
+    const {data,error} = await supabase.storage.from(bucketName).getPublicUrl(path);
+    
+    if(error){
+        console.log(error);
+        return null;
+  }
+  
+  return data.publicUrl;
+  } catch (err) {
+    console.log(err);
+  }
 
 }
 

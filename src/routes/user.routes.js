@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { finalizeIntitialRegistration, forgetPasswordStep1, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture, userLoginStep1, userLoginStep2, userLogout, verifyAdhaar} from '../controllers/user.controllers.js';
+import { finalizeIntitialRegistration, forgetPasswordStep1, insertBankAccountInfo, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture, userLoginStep1, userLoginStep2, userLogout, verifyAdhaar} from '../controllers/user.controllers.js';
 import multer from 'multer';
 import { checkAuthentication } from '../middlewares/authentication.middleware.js';
 const storage = multer.memoryStorage();
@@ -19,6 +19,31 @@ const router = Router();
 // router.route('/updateUserSignaturePic').post(upload.single('userSignature-pic'),updateSignature);
 // router.route('/finalizeInitialRegistration').post(finalizeIntitialRegistration);
 
+/*
+
+(err, req, res, next) => {
+  if (err.code === 'LIMIT_FILE_SIZE') {
+    // Handle file size limit error
+    return res.status(400).json({ error: 'File size is too large. Max limit is 5MB.' });
+  }
+
+  // Handle other errors
+  return res.status(500).json({ error: 'An unknown error occurred!' });
+};
+
+
+
+*/
+// const fileSizeHandling = async (err, req, res, next) => {
+//   if (err.code === 'LIMIT_FILE_SIZE') {
+//     // Handle file size limit error
+//     return res.status(400).json({ error: 'File size is too large. Max limit is 5MB.' });
+//   }
+
+//   // Handle 
+// };
+
+
 
 // // route to be accessed by logged in user those who have token for authentication
 // router.route('/updateUserProfilePicture').post(upload.single('profile-pic'),updateProfilePicture);
@@ -27,7 +52,7 @@ router.route('/register-step1').post(registerUserStep1);
 router.route('/finalizeInitialRegistration').post(finalizeIntitialRegistration);
 
 // Document uploads
-router.route('/upload-profile-picture').post(upload.single('profile-pic'), uploadProfilePicture);
+router.route('/upload-profile-picture').post(upload.single('profile-pic'),uploadProfilePicture);
 router.route('/updatePanCard').post(upload.single('panCard-pic'), updatePan);
 router.route('/updateAdhaar').post(upload.single('adhaar-pic'), updateAdhaar);
 
@@ -47,6 +72,8 @@ router.route('/logout').post(checkAuthentication,userLogout);
 
 router.route('/verifyAdhaarNumber').post(verifyAdhaar);
 
+router.route('/insertBankDetails').post(insertBankAccountInfo);
+
 
 router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
 
@@ -56,7 +83,7 @@ todo:
 
 1. link bank account manually or upi
 
-2. forget password
+2. forget password to be completed ..
 
 4. update user details
 

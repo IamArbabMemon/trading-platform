@@ -38,9 +38,16 @@ const accountSchema = new mongoose.Schema({
       },
       default:null
     },
-    bankName: { type: String, required: true },
-    branchName: { type: String, required: true },
+    bankName: { type: String, required: false },
+    branchName: { type: String, required: false },
   },
+  
+  user:{
+    type:mongoose.Schema.Types.ObjectId,
+    unique:true,
+    required:true
+  },
+
   incomeProof: {
     type: String,  // File path to the uploaded income proof
     required: false,
@@ -50,12 +57,11 @@ const accountSchema = new mongoose.Schema({
   accountType: {
     type: String,
     enum: ['Equity','Demat', 'F&O'],
-    required: true,
+    required: false,
   },
   
   upiId: {
     type: String,
-    required: true,
     unique: true,
     validate: {
       validator: function (v) {

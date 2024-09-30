@@ -11,6 +11,7 @@ import { forgetPasswordText, loginOTPText, registrationText } from "../mailTempl
 import bcrypt from 'bcryptjs'
 import {tempForLoginModel } from "../models/tempForLogin.model.js";
 import { tempForForgetPasswordModel } from '../models/tempForForgetPassword.model.js';
+import { accountModel } from '../models/account.model.js';
 // Controller for registering a new user
 const registerUserStep1 = async (req, res, next) => {
   try {
@@ -235,7 +236,15 @@ const updateAdhaar = async (req, res, next) => {
 
         const path = `${newUser.username}:${newUser._id}`
 
+
+        if(!path)
+          throw new ErrorResponse("picture already exist",400);
+
+
         const imagePath =  await uploadImageOnSupabase(req.file,path,'IncomeProof-Pictures');
+
+        if(imagePath.message)  
+          throw new ErrorResponse("Picture already exist",400);
 
         const publicPath = await getPublicImageURL('IncomeProof-Pictures',imagePath.path);
 
@@ -284,10 +293,15 @@ const updateAdhaar = async (req, res, next) => {
 
         const imagePath =  await uploadImageOnSupabase(req.file,path,'Signature-Picture');
 
+        if(!imagePath.path)
+          throw new ErrorResponse("Resource already exist",400)
+
         const publicPath = await getPublicImageURL('Signature-Picture',imagePath.path);
 
         if(!publicPath)
          throw new ErrorResponse("Error occured in getting the Signature picture public url from supabase",500);
+
+
 
 
         newUser.signature = publicPath;
@@ -587,7 +601,11 @@ const forgetPasswordStep2 = async(req,res,next)=>{
 
       const hashedPassword = await bcrypt.hash(newPasword,10);
 
+      const user = await userModel.findOne({userZID:userZID});
 
+      user.password = hashedPassword;
+
+      await user.save();
 
     return res.status(200).json({message:"OTP HAS BEEN SENT"});
 
@@ -622,6 +640,34 @@ const verifyAdhaar = async(req,res,next)=>{
 }
 
 
+const insertBankAccountInfo = async(req,res,next)=>{
+
+  try {
+    
+      const {bankDetails,userObjectID} = req.body;
+
+      if(!bankDetails || !userObjectID)
+        throw new ErrorResponse("bankDetails Object OR userObjectID is missing",400);
+
+        const userBio = await userModel.findById(userObjectID);
+
+
+      await accountModel.create({
+        bankDetails:bankDetails,
+        user:userObjectID,
+        incomeProof:userBio.incomeProof
+      });
+
+      return res.status(200).json({message:"Bank Info has been successfully inserted"});
+
+  } catch (err) {
+    next(err);
+  }
+
+
+}
+
+
 export{
     registerUserStep1,
     updateAdhaar,
@@ -635,5 +681,6 @@ export{
     userLoginStep2,
     userLogout,
     forgetPasswordStep1,
-    verifyAdhaar
+    verifyAdhaar,
+    insertBankAccountInfo
 };
