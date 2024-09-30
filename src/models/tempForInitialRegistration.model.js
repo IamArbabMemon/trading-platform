@@ -1,6 +1,6 @@
 import mongoose from 'mongoose';
 
-const tempModelSchema = new mongoose.Schema({
+const tempInitialModelSchema = new mongoose.Schema({
 
     username: {
         type: String,
@@ -54,7 +54,7 @@ const tempModelSchema = new mongoose.Schema({
 
 },{timestamps:true});
 
-const tempInitialRegistrationModel = mongoose.model('tempInitialRegistration', tempModelSchema);
+const tempInitialRegistrationModel = mongoose.model('tempInitialRegistration', tempInitialModelSchema);
 
 export{
    tempInitialRegistrationModel

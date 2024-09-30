@@ -24,6 +24,11 @@ const registerUserStep1 = async (req, res, next) => {
       password
     } = req.body;
 
+    const checkUserExist = await userModel.findOne({email:email});
+    
+    if(checkUserExist)
+      throw new ErrorResponse("Email is already in used",400);
+
     // Check if all required fields are provided
     if (!username || !email || !mobileNumber || !role || !address || !password) {
       throw new ErrorResponse("Please provide all the required fields",400);
@@ -31,7 +36,10 @@ const registerUserStep1 = async (req, res, next) => {
 
     // Create a new user instance with the provided data
     
-    const OTP = await generateOTP();
+    let OTP = await generateOTP();
+
+      OTP = OTP.toUpperCase();
+      console.log(OTP);
 
     console.log("OTP FOR INITIAL REGISTRATION : ",OTP);
 
@@ -58,6 +66,8 @@ const registerUserStep1 = async (req, res, next) => {
       password:hashedPassword,
       OTP:OTP
     });
+
+    console.log("TEMP INITIAL REGISTERED USERRRR  :", newUser);
 
        // Send a success response with the saved user data
     return res.status(201).json({
@@ -94,7 +104,13 @@ const updateAdhaar = async (req, res, next) => {
 
          const imagePath =  await uploadImageOnSupabase(req.file,path,'AdhaarCard-Pictures');
     
+         
+         if(!imagePath)
+          throw new ErrorResponse("PICTURE ALREADY EXIST",400);
+         
          const publicPath = await getPublicImageURL('AdhaarCard-Pictures',imagePath.path);
+
+
 
          if(!publicPath)
           throw new ErrorResponse("Error occured in getting the Adhaar Card picture public url from supabase",500);
@@ -123,9 +139,14 @@ const updateAdhaar = async (req, res, next) => {
     try {
       // Destructure the fields from the request body
      
-        const{userObjectID , pan} = req.body;
+        const{userObjectID , pan,dob} = req.body;
       
-        if (!userObjectID || !pan) {
+        const checkPanCardDuplication = await userModel.findOne({pan:pan});
+
+        if(checkPanCardDuplication)
+          throw new ErrorResponse("Pan card number already in used",400);
+
+        if (!userObjectID || !pan || !dob) {
             throw new ErrorResponse("Please provide adhaar and userObjectID",400);
           }   
 
@@ -143,7 +164,11 @@ const updateAdhaar = async (req, res, next) => {
 
         const imagePath =  await uploadImageOnSupabase(req.file,path,'PanCard-Pictures');
 
-    console.log(imagePath.path);
+    
+        if(!imagePath.path)
+          throw new ErrorResponse("Error uplaoding image in supabase",400);
+
+        console.log(imagePath.path);
 
         const publicPath = await getPublicImageURL('PanCard-Pictures',imagePath.path);
 
@@ -157,7 +182,23 @@ const updateAdhaar = async (req, res, next) => {
         
         newUser.PanCardPicture = publicPath;
 
+        newUser.dob = new Date(dob);
+
         await newUser.save();
+
+        // await userModel.updateOne(
+        //   { _id: userObjectID }, // Filter: specify the user ID or other identifier
+        //   {
+        //     $set: {
+        //       pan: pan,
+        //       PanCardPicture: publicPath,
+        //       dob: new Date(dob),
+        //     }
+        //   }
+        // );
+        
+
+
       // Send a success response with the saved user data
       return res.status(201).json({
         message: 'User Pan Card info has been inserted succesfully!',
@@ -347,9 +388,11 @@ const finalizeIntitialRegistration = async(req,res,next)=>{
 
       try {
         
-        const{email,OTP} = req.body;
+        const{email,otp} = req.body;
 
-        if(!email || !OTP)
+        console.log(req.body);
+
+        if(!email || !otp)
           throw new ErrorResponse("email OR OTP is missing",400);          
 
         const findUser = await tempInitialRegistrationModel.findOne({email:email});
@@ -357,15 +400,20 @@ const finalizeIntitialRegistration = async(req,res,next)=>{
         if(!findUser)
           throw new ErrorResponse("USER NOT FOUND",404);          
 
-        if(!(findUser.OTP === OTP))
-          throw new ErrorResponse("OTP NOT MATCHED",400);          
+        if(!(findUser.OTP === otp)){
+            await tempInitialRegistrationModel.deleteOne({email:email});
+          throw new ErrorResponse("OTP NOT MATCHED",400); 
+        }         
+
+
 
         const newUser = await userModel.create({
           username:findUser.username,
           mobileNumber:findUser.mobileNumber,
           email:findUser.email,
           address:findUser.address,
-          role:findUser.role
+          role:findUser.role,
+          password:findUser.password
         });
 
         await tempInitialRegistrationModel.deleteOne({email:email});
@@ -524,6 +572,56 @@ const forgetPasswordStep1 = async(req,res,next)=>{
 };
 
 
+const forgetPasswordStep2 = async(req,res,next)=>{
+
+  try {
+    const {userZID,OTP,newPasword} = req.body;
+
+      if(!userZID || !OTP || !newPasword)
+        throw new ErrorResponse("Request body data is missing some field",400);
+
+    const isOTPCorrect = await tempForForgetPasswordModel.findOne({ userZID: userZID, OTP: OTP });
+
+    if(!isOTPCorrect)
+        throw new ErrorResponse("OTP NOT MATCHED",400);
+
+      const hashedPassword = await bcrypt.hash(newPasword,10);
+
+
+
+    return res.status(200).json({message:"OTP HAS BEEN SENT"});
+
+  } catch (err) {
+    next(err);
+  }
+ 
+};
+
+
+const verifyAdhaar = async(req,res,next)=>{
+  try {
+    
+      const {userObjectID,adhaar} = req.body;
+
+     if(!userObjectID || !adhaar)
+        throw new ErrorResponse("UserObjectID or adhaar is missing",400);   
+
+     const user = await userModel.findById(userObjectID);
+
+     if(!user) 
+      throw new ErrorResponse("User not found",400);
+    
+     if(user.aadhaar !== adhaar)
+      throw new ErrorResponse("Adhaar Card Number is not matched with the previous Adhaar Card Number you have provided",400);
+
+     return res.status(200).json({message:"Adhaar Card Number has been verified"});
+
+  } catch (err) {
+    next(err);
+  }
+}
+
+
 export{
     registerUserStep1,
     updateAdhaar,
@@ -536,5 +634,6 @@ export{
     userLoginStep1,
     userLoginStep2,
     userLogout,
-    forgetPasswordStep1
+    forgetPasswordStep1,
+    verifyAdhaar
 };

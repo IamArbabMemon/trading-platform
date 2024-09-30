@@ -57,7 +57,7 @@ try {
     return data;
 
   } catch (error) {
-    console.log('Error uploading video:', error.message);
+    console.log('Error uploading Picture on supabase:', error.message);
 }
   
 }

@@ -61,6 +61,10 @@ const userSchema = new mongoose.Schema({
     default: null,
   },
 
+  dob:{
+    type:Date
+  },
+
   pan: {
     type: String,
     unique: true,
