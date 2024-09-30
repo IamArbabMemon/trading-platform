@@ -665,6 +665,25 @@ const insertBankAccountInfo = async(req,res,next)=>{
   }
 
 
+};
+
+
+const updateUserProfileDetails = async(req,res,next)=>{
+  try {
+    
+      if(!req.user)
+          throw new ErrorResponse("User is not logged in ",400);
+
+       const {userDetailsObject} = req.body; 
+
+       const user = await userModel.findById(req.user.userObjectID);
+
+      
+
+
+  } catch (err) {
+    next(err);
+  }
 }
 
 
@@ -682,5 +701,6 @@ export{
     userLogout,
     forgetPasswordStep1,
     verifyAdhaar,
-    insertBankAccountInfo
+    insertBankAccountInfo,
+    forgetPasswordStep2
 };
