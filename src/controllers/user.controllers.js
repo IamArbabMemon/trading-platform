@@ -684,7 +684,28 @@ const updateUserProfileDetails = async(req,res,next)=>{
   } catch (err) {
     next(err);
   }
-}
+};
+
+
+const getUserByID = async(req,res,next)=>{
+  try {
+    
+      if(!req.user)
+          throw new ErrorResponse("User is not logged in ",400);
+
+      const user = await userModel.findById(req.user.userObjectID).select('username email mobileNumber userZID profilePhoto');
+
+      if(!user)
+        throw new ErrorResponse("User not found",404); 
+
+      return res.status(200).json({message:'user has been fetched succesfully',user:user});
+
+  } catch (err) {
+    next(err);
+  }
+};
+
+
 
 
 export{
@@ -702,5 +723,6 @@ export{
     forgetPasswordStep1,
     verifyAdhaar,
     insertBankAccountInfo,
-    forgetPasswordStep2
+    forgetPasswordStep2,
+    getUserByID
 };

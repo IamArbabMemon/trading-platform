@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { finalizeIntitialRegistration, forgetPasswordStep1, forgetPasswordStep2, insertBankAccountInfo, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture, userLoginStep1, userLoginStep2, userLogout, verifyAdhaar} from '../controllers/user.controllers.js';
+import { finalizeIntitialRegistration, forgetPasswordStep1, forgetPasswordStep2, getUserByID, insertBankAccountInfo, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture, userLoginStep1, userLoginStep2, userLogout, verifyAdhaar} from '../controllers/user.controllers.js';
 import multer from 'multer';
 import { checkAuthentication } from '../middlewares/authentication.middleware.js';
 const storage = multer.memoryStorage();
@@ -76,6 +76,7 @@ router.route('/verifyAdhaarNumber').post(verifyAdhaar);
 router.route('/insertBankDetails').post(insertBankAccountInfo);
 
 
+router.route('/insertBankDetails').get(checkAuthentication,getUserByID);
 
 
 router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
@@ -84,11 +85,9 @@ router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
 
 todo: 
 
-1. link bank account manually or upi
+1. link bank account manually or upi .. how to deal with upi 
 
-2. forget password to be completed ..
-
-4. update user details
+4. update user details after discussing with ahsan
 
 
 */
