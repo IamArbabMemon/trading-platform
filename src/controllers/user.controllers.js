@@ -687,7 +687,7 @@ const updateUserProfileDetails = async(req,res,next)=>{
 };
 
 
-const getUserByID = async(req,res,next)=>{
+const getUser = async(req,res,next)=>{
   try {
     
       if(!req.user)
@@ -703,6 +703,31 @@ const getUserByID = async(req,res,next)=>{
   } catch (err) {
     next(err);
   }
+};
+
+
+const getUserByID = async(req,res,next)=>{
+  try {
+    
+      const {userObjectID} = req.body;
+
+    if(!userObjectID)
+      throw new ErrorResponse("userObjectID is missing",400);
+
+      if(!req.user)
+          throw new ErrorResponse("User is not logged in ",400);
+
+      const user = await userModel.findById(userObjectID).select('username email mobileNumber userZID profilePhoto');
+
+      if(!user)
+        throw new ErrorResponse("User not found",404); 
+
+      return res.status(200).json({message:'user has been fetched succesfully',user:user});
+
+  } catch (err) {
+    next(err);
+  }
+
 };
 
 
@@ -724,5 +749,5 @@ export{
     verifyAdhaar,
     insertBankAccountInfo,
     forgetPasswordStep2,
-    getUserByID
+    getUser
 };

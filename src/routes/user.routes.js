@@ -1,5 +1,5 @@
 import {Router} from 'express';
-import { finalizeIntitialRegistration, forgetPasswordStep1, forgetPasswordStep2, getUserByID, insertBankAccountInfo, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture, userLoginStep1, userLoginStep2, userLogout, verifyAdhaar} from '../controllers/user.controllers.js';
+import { finalizeIntitialRegistration, forgetPasswordStep1, forgetPasswordStep2, getUser, insertBankAccountInfo, registerUserStep1,updateAdhaar,updateIncomeProof,updatePan,updateProfilePicture,updateSignature,uploadProfilePicture, userLoginStep1, userLoginStep2, userLogout, verifyAdhaar} from '../controllers/user.controllers.js';
 import multer from 'multer';
 import { checkAuthentication } from '../middlewares/authentication.middleware.js';
 const storage = multer.memoryStorage();
@@ -76,7 +76,7 @@ router.route('/verifyAdhaarNumber').post(verifyAdhaar);
 router.route('/insertBankDetails').post(insertBankAccountInfo);
 
 
-router.route('/insertBankDetails').get(checkAuthentication,getUserByID);
+router.route('/insertBankDetails').get(checkAuthentication,getUser);
 
 
 router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
