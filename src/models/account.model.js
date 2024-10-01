@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const accountSchema = new mongoose.Schema({
   bankDetails: {
     accountNumber: { 
-      type: String, 
+      type: String,                                                  
       required: true,
       validate: {
         validator: function (v) {
@@ -65,8 +65,12 @@ const accountSchema = new mongoose.Schema({
     unique: true,
     validate: {
       validator: function (v) {
+
+        if (v == null) return true;
+
         const upiIdPattern = /^[a-zA-Z0-9.\-_]{2,32}@[a-zA-Z]{2,20}$/;
         return upiIdPattern.test(v);
+    
       },
       message: props => `${props.value} is not a valid UPI ID!`
     },

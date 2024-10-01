@@ -18,6 +18,15 @@ app.use('/api/v1/user',userRouter);
 
 app.use('/api/v1/admin',adminRouter);
 
+app.get('/get-cookie',(req,res)=>{
+    console.log("i am inside cooke")
+     res.cookie('token', "i am loruuu token", {
+        httpOnly: true,
+    });
+
+    return res.send("hello")
+})
+
 
 // app.use('/hello',(req,res)=>res.send())
 

@@ -62,8 +62,8 @@ router.route('/updateUserSignaturePic').post(upload.single('userSignature-pic'),
 router.route('/forgetPasswordStep1').post(forgetPasswordStep1);
 router.route('/forgetPasswordStep2').post(forgetPasswordStep2);
 
-router.route('/login/step1',userLoginStep1);
-router.route('/login/step2',userLoginStep2);
+router.route('/login/step1').post(userLoginStep1);
+router.route('/login/step2').post(userLoginStep2);
 
 
 
@@ -76,7 +76,7 @@ router.route('/verifyAdhaarNumber').post(verifyAdhaar);
 router.route('/insertBankDetails').post(insertBankAccountInfo);
 
 
-router.route('/insertBankDetails').get(checkAuthentication,getUser);
+router.route('/getUser').get(checkAuthentication,getUser);
 
 
 router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
@@ -88,6 +88,10 @@ todo:
 1. link bank account manually or upi .. how to deal with upi 
 
 4. update user details after discussing with ahsan
+
+5. browser does not have cookie .
+
+6. 
 
 
 */

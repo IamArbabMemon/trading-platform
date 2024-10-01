@@ -448,16 +448,24 @@ const userLoginStep1 = async(req,res,next)=>{
 
   try {
     const {userZID,password} = req.body;
+
+    console.log(req.body);
   
     if(!userZID || !password)
         throw new ErrorResponse("Login Credential missing",400);
 
     const user= await userModel.findOne({userZID:userZID});
 
+  console.log(user);
+
     if(!user)
       throw new ErrorResponse("User not found",404);
 
+      console.log(user.password);
+      
     const passIsCorrect = await bcrypt.compare(password,user.password);
+
+    console.log(passIsCorrect);
 
     if(!passIsCorrect)
       throw new ErrorResponse("Incorrect Password",400);
@@ -494,16 +502,21 @@ const userLoginStep2 = async(req,res,next)=>{
   try {
     const {userZID,OTP} = req.body;
   
+      console.log(req.body);
+
     if(!userZID || !OTP)
         throw new ErrorResponse("OTP OR USERZID IS MISSING",400);
     
-      const findUser = await tempForLoginModel.findOne({userZID:userZID});
+    
+    const findUser = await tempForLoginModel.findOne({userZID:userZID});
 
       if(!findUser)
         throw new ErrorResponse("User credentials are missing USERZID not found",400);
 
-      if(!(findUser.OTP === OTP))
+      if(!(findUser.OTP === OTP)){
+        await tempForLoginModel.deleteOne({userZID:userZID});
         throw new ErrorResponse("OTP NOT MATCHED",400);          
+      }
 
 
         const detailedUser = await userModel.findOne({userZID:userZID});
@@ -521,10 +534,14 @@ const userLoginStep2 = async(req,res,next)=>{
         { expiresIn: '1h' } // Set the token to expire in 1 hour
       );
       
-         
-      return res.cookie('access-token', token, {
+        
+      await tempForLoginModel.deleteOne({userZID:userZID});
+
+        res.cookie('token', token, {
          httpOnly: true,
-     }).json({message:"Access token has been set",token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString()}});
+     });
+
+     return res.status(200).json({message:"Access token has been set",token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString()}});
 
        
   } catch (err) {
@@ -589,9 +606,9 @@ const forgetPasswordStep1 = async(req,res,next)=>{
 const forgetPasswordStep2 = async(req,res,next)=>{
 
   try {
-    const {userZID,OTP,newPasword} = req.body;
+    const {userZID,OTP,newPassword} = req.body;
 
-      if(!userZID || !OTP || !newPasword)
+      if(!userZID || !OTP || !newPassword)
         throw new ErrorResponse("Request body data is missing some field",400);
 
     const isOTPCorrect = await tempForForgetPasswordModel.findOne({ userZID: userZID, OTP: OTP });
@@ -599,7 +616,7 @@ const forgetPasswordStep2 = async(req,res,next)=>{
     if(!isOTPCorrect)
         throw new ErrorResponse("OTP NOT MATCHED",400);
 
-      const hashedPassword = await bcrypt.hash(newPasword,10);
+      const hashedPassword = await bcrypt.hash(newPassword,10);
 
       const user = await userModel.findOne({userZID:userZID});
 
@@ -607,7 +624,7 @@ const forgetPasswordStep2 = async(req,res,next)=>{
 
       await user.save();
 
-    return res.status(200).json({message:"OTP HAS BEEN SENT"});
+    return res.status(200).json({message:"Password has been changed successfully"});
 
   } catch (err) {
     next(err);
@@ -618,8 +635,11 @@ const forgetPasswordStep2 = async(req,res,next)=>{
 
 const verifyAdhaar = async(req,res,next)=>{
   try {
-    
+        console.log("inside verify adhaar");
+
       const {userObjectID,adhaar} = req.body;
+
+      console.log(req.body);
 
      if(!userObjectID || !adhaar)
         throw new ErrorResponse("UserObjectID or adhaar is missing",400);   
@@ -652,11 +672,14 @@ const insertBankAccountInfo = async(req,res,next)=>{
         const userBio = await userModel.findById(userObjectID);
 
 
-      await accountModel.create({
+
+      const data = await accountModel.create({
         bankDetails:bankDetails,
         user:userObjectID,
         incomeProof:userBio.incomeProof
       });
+
+      console.log(data);
 
       return res.status(200).json({message:"Bank Info has been successfully inserted"});
 
