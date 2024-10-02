@@ -103,6 +103,12 @@ const userSchema = new mongoose.Schema({
     enum: ['pending', 'approved', 'rejected'],
     default: 'pending',
   },
+
+  status:{
+    type: String,
+    enum: ['active', 'frozen'],
+    default: 'active',
+  },
   
   role: {
     type: String,

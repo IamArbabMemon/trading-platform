@@ -117,5 +117,4 @@ const getEnc = ()=>{
 }
 
 
-getEnc();
 

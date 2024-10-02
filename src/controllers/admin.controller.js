@@ -23,6 +23,22 @@ const getAllUsers = async(req,res,next)=>{
 };
 
 
+const getUsersWaitingForRegistration = async(req,res,next)=>{
+    try {
+        
+        const users = await userModel.find({kycStatus:'pending'});
+
+        console.log(users);
+
+        return res.status(200).json(users);
+
+    } catch (err) {
+        next(err)
+    }
+}
+
+
+
 export {
     getAllUsers
 }
