@@ -1,5 +1,5 @@
 import { customAlphabet }  from 'nanoid';
-import { userModel } from '../models/user.model';
+import { userModel } from '../models/user.model.js';
 
 const generateCustomZerodhaID = async()=>{
     const letters = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 3)(); // 3 letters

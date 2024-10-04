@@ -44,6 +44,7 @@ const checkAuthentication = async (req,res,next)=>{
         // Proceed to the next middleware or route handler
         next();
 
+        console.log(req.cookies.token);
 
     }catch(err){
         console.log(err.statusCode);

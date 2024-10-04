@@ -69,7 +69,7 @@ router.route('/login/step2').post(userLoginStep2);
 
 // Authenticated user actions
 router.route('/updateUserProfilePicture').post(checkAuthentication,upload.single('profile-pic'), updateProfilePicture);
-router.route('/logout').post(checkAuthentication,userLogout);
+router.route('/logout').get(checkAuthentication,userLogout);
 
 router.route('/verifyAdhaarNumber').post(verifyAdhaar);
 
@@ -79,7 +79,7 @@ router.route('/insertBankDetails').post(insertBankAccountInfo);
 router.route('/getUser').get(checkAuthentication,getUser);
 
 
-router.route('/healthCheck').get((req,res)=>res.send("OKAYYY"));
+router.route('/healthCheck').get((req,res)=>{console.log("I am hitting ");res.send("OKAYYY")});
 
 /*
 

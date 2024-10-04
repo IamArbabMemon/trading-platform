@@ -352,7 +352,7 @@ const updateAdhaar = async (req, res, next) => {
       await newUser.save();
 
       return res.status(201).json({
-        message: 'User Profile picture has been updated!',
+        message: 'User Profile picture has been uploaded!',
         user: {username:newUser.username,userObjectID:newUser._id.toString()},
       });
 
@@ -467,9 +467,11 @@ const userLoginStep1 = async(req,res,next)=>{
     console.log(passIsCorrect);
 
     if(!passIsCorrect)
-      throw new ErrorResponse("Incorrect Password",400);
+      throw new ErrorResponse("username or password is incorrect",400);
 
     const OTP = await generateOTP();
+
+    console.log(OTP);
 
     const result = await sendOTPMail({text:loginOTPText,otp:OTP,email:user.email,subject:"Login OTP"});
 
@@ -494,8 +496,6 @@ const userLoginStep1 = async(req,res,next)=>{
 }
 
 
-
-
 const userLoginStep2 = async(req,res,next)=>{
 
   try {
@@ -509,11 +509,13 @@ const userLoginStep2 = async(req,res,next)=>{
     
     const findUser = await tempForLoginModel.findOne({userZID:userZID});
 
+    console.log(findUser);
+
       if(!findUser)
         throw new ErrorResponse("User credentials are missing USERZID not found",400);
 
       if(!(findUser.OTP === OTP)){
-        await tempForLoginModel.deleteOne({userZID:userZID});
+        await tempForLoginModel.deleteMany({userZID:userZID});
         throw new ErrorResponse("OTP NOT MATCHED",400);          
       }
 
@@ -534,7 +536,7 @@ const userLoginStep2 = async(req,res,next)=>{
       );
       
         
-      await tempForLoginModel.deleteOne({userZID:userZID});
+      await tempForLoginModel.deleteMany({userZID:userZID});
 
         res.cookie('token', token, {
          httpOnly: true,
@@ -553,6 +555,11 @@ const userLoginStep2 = async(req,res,next)=>{
 const userLogout = async(req,res,next)=>{
   try{
 
+          // console.log("logging out",req.cookies.token);
+
+          console.log("token from coookieee", req.cookies.token)
+
+          console.log("logging out");
            if(!req.user)
               throw new ErrorResponse('User is not logged in or authenticated',400);
 

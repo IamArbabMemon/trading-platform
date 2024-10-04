@@ -28,16 +28,19 @@ const getAllUsers = async(req,res,next)=>{
 
 const getUsers = async(req,res,next)=>{
     try {
-        const {kycStatus} = req.query;
+        let {kycStatus} = req.query;
         let {status} = req.query;
         
+        if(!kycStatus)
+              kycStatus = 'pending';  
+
         if(!status)
             status = "active"
 
         
         const users = await userModel
   .find({ kycStatus: kycStatus,status:status}) // Match documents based on kycStatus and status
-  .select('username email mobileNumber userZID aadhaar pan kycStatus'); // Select specific fields
+  .select('username email mobileNumber userZID aadhaar pan kycStatus country'); // Select specific fields
 
         console.log(users);
             
@@ -88,5 +91,6 @@ const approveUser = async(req,res,next)=>{
 
 export {
     getAllUsers,
-    getUsers
+    getUsers,
+    approveUser
 }
