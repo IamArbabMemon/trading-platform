@@ -9,17 +9,15 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-const sendWelcomeMail = async (user) => {
-    let textToSend = "DEAR [User] WELCOME TO THE FAMILY OF OUR CUSTOMERS. WE WISH YOU A GREAT JOURNEY WITH US!";
-    textToSend = textToSend.replace("[User]", user.username);
-
+const sendWelcomeMail = async (data) => {
+    let textToSend = `DEAR ${data.username} WELCOME TO THE FAMILY OF OUR CUSTOMERS. YOUR USER ID IS ${data.userZID}  . YOU WILL USE THIS ID TO GET LOGGED IN MENGAL KESHAV PLATFROM .WE WISH YOU A GREAT JOURNEY WITH US!`;
     try {
         const info = await transporter.sendMail({
             from: {
-                name: `UNIQUE LEARNING PLATFORM Team`,
+                name: `MENGAL KESHAV TRADING PLATFORM`,
                 address: process.env.MAILER_EMAIL
             }, // sender address
-            to: user.email, // list of receivers
+            to: data.email, // list of receivers
             subject: "WELCOME EMAIL", // Subject line
             text: textToSend, // plain text body
             html: "" // html body

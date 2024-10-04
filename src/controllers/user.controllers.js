@@ -420,7 +420,6 @@ const finalizeIntitialRegistration = async(req,res,next)=>{
         }         
 
 
-
         const newUser = await userModel.create({
           username:findUser.username,
           mobileNumber:findUser.mobileNumber,
@@ -774,5 +773,6 @@ export{
     verifyAdhaar,
     insertBankAccountInfo,
     forgetPasswordStep2,
-    getUser
+    getUser,
+    getUserByID
 };

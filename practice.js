@@ -1,5 +1,6 @@
 import bcrypt from 'bcryptjs';
 import { get } from 'mongoose';
+
 // import { tempInitialRegistrationModel } from "./src/models/tempForInitialRegistration.model.js";
 // import mongoose from "mongoose";
 
@@ -110,11 +111,51 @@ import { get } from 'mongoose';
 
 // )();
 
+import { customAlphabet }  from 'nanoid';
+import { DBConnection } from './src/db/index.js';
+import { userModel } from './src/models/user.model.js';
+// Create a custom alphabet for uppercase letters and digits
+//const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+//const generateZerodhaID = customAlphabet(alphabet, 6); // 6 characters long
 
-const getEnc = ()=>{
-  const pass = bcrypt.hashSync('786pakistan');
-  console.log(pass);
+// Ensure the format is ABC123 by enforcing the first 3 as letters and last 3 as digits
+const generateCustomZerodhaID = async()=> {
+  const letters = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 3)(); // 3 letters
+  const digits = customAlphabet('0123456789', 3)(); // 3 digits
+  return `${letters}${digits}`;
+  
 }
+
+  DBConnection().then(()=>{
+    console.log("CONNECTEDDD");
+  })
+
+const getuserZID = async()=>{
+
+  let ZID = 'COD123'// await generateCustomZerodhaID();
+
+  let user = await userModel.findOne({userZID:ZID}) ;
+  console.log(user);
+
+  while(user){
+    ZID = await generateCustomZerodhaID();
+    console.log(ZID);
+    user = await userModel.findOne({userZID:'COD123'});
+  }
+  
+  return ZID;
+
+}
+
+
+
+getuserZID().then((data)=>{console.log(data)});
+
+
+// const getEnc = ()=>{
+//   const pass = bcrypt.hashSync('786pakistan');
+//   console.log(pass);
+// }
 
 
 
