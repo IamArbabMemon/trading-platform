@@ -54,8 +54,8 @@ const sendOTPMail = async (data) => {
     }
 };
 
-const sendUserZID = async (data) => {
-    let textToSend = `${data.text} ${data.zid}`;
+const sendRejectionMail = async (data) => {
+    let textToSend = `DEAR ${data.username} ${data.text}`;
     
     try {
         const info = await transporter.sendMail({
@@ -64,7 +64,7 @@ const sendUserZID = async (data) => {
                 address: process.env.MAILER_EMAIL
             }, // sender address
             to: data.email, // list of receivers
-            subject: data.subject, // Subject line
+            subject: "Application Rejection", // Subject line
             text: textToSend, // plain text body
             html: "" // html body
         });
@@ -81,7 +81,7 @@ const sendUserZID = async (data) => {
 export {
     sendOTPMail,
     sendWelcomeMail,
-    sendUserZID
+    sendRejectionMail,
 };
 
 

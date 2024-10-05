@@ -1,7 +1,8 @@
+import { rejectionEmailText } from "../mailTemplates.js";
 import { userModel } from "../models/user.model.js";
 import { ErrorResponse } from "../utils/errorResponse.js"
 import { getUserZID } from "../utils/generateUserZID.js";
-import { sendOTPMail, sendWelcomeMail } from "../utils/mailer.js";
+import { sendOTPMail, sendRejectionMail, sendWelcomeMail } from "../utils/mailer.js";
 import { getUserByID, registerUserStep1 } from "./user.controllers.js";
 
 
@@ -87,10 +88,40 @@ const approveUser = async(req,res,next)=>{
 }
 
 
+const rejectUser = async(req,res,next)=>{
+    try {
+        
+        const {aadhaar} = req.body;
+
+        if(!aadhaar)
+            throw new ErrorResponse("Adhaar number is missing",400);
+
+        const user = await userModel.findOne({aadhaar:aadhaar});
+
+        if(!user)
+            throw new ErrorResponse("User not found. Wrong aadhaar number ",400);
+
+        const result = await sendRejectionMail({username:user.username,text:rejectionEmailText,email:user.email});
+
+        if(!result)
+            throw new ErrorResponse("Error in sending email for Rejection ",500);
+        
+        await userModel.deleteOne({aadhaar:user.aadhaar});
+
+       return res.status(200).json({message:"user has been rejected and email has been sent"}); 
+
+    } catch (err) {
+        next(err);
+    }
+}
+
+
+
 
 
 export {
     getAllUsers,
     getUsers,
-    approveUser
+    approveUser,
+    rejectUser
 }

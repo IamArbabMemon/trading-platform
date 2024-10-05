@@ -573,8 +573,7 @@ const userLogout = async(req,res,next)=>{
 
              // Clear the token from the cookie
              res.clearCookie('token', {
-              httpOnly: true,
-              sameSite:'None'
+              httpOnly: true
           });
   
           // Send response confirming logout
