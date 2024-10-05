@@ -86,6 +86,12 @@ const userSchema = new mongoose.Schema({
     default:null
   },
 
+  profileLocalPath:{
+    type: String,  // File path to the profile photo
+    required: false,
+    default:null
+  },
+
   signature: {
     type: String,  // File path to the signature image
     //required: true,

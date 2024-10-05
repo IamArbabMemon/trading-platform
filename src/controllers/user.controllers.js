@@ -349,6 +349,8 @@ const updateAdhaar = async (req, res, next) => {
 
       newUser.profilePhoto = publicPath;
 
+      newUser.profileLocalPath = imagePath.fullPath;
+
       await newUser.save();
 
       return res.status(201).json({
@@ -377,15 +379,19 @@ const updateAdhaar = async (req, res, next) => {
 
      const newUser = await userModel.findById(userObjectID);
 
-     const path = newUser.profilePhoto;
+     const path = newUser.profileLocalPath;
 
      const imagePath =  await updateImageOnSupabase(req.file,path,'Profile-Pictures');
 
     console.log(imagePath);
 
-    //  newUser.profilePhoto = imagePath.path;
+   const newProfilePicPath =  await getPublicImageURL('Profile-Pictures',imagePath.path);
 
-    //  await newUser.save();
+     newUser.profilePhoto = newProfilePicPath;
+
+    newUser.profileLocalPath = imagePath.path;
+
+     await newUser.save();
 
      return res.status(201).json({
        message: 'User Profile picture has been updated!',
