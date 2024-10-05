@@ -111,46 +111,56 @@ import { get } from 'mongoose';
 
 // )();
 
-import { customAlphabet }  from 'nanoid';
-import { DBConnection } from './src/db/index.js';
-import { userModel } from './src/models/user.model.js';
-// Create a custom alphabet for uppercase letters and digits
-//const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-//const generateZerodhaID = customAlphabet(alphabet, 6); // 6 characters long
+// import { customAlphabet }  from 'nanoid';
+// import { DBConnection } from './src/db/index.js';
+// import { userModel } from './src/models/user.model.js';
+// // Create a custom alphabet for uppercase letters and digits
+// //const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+// //const generateZerodhaID = customAlphabet(alphabet, 6); // 6 characters long
 
-// Ensure the format is ABC123 by enforcing the first 3 as letters and last 3 as digits
-const generateCustomZerodhaID = async()=> {
-  const letters = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 3)(); // 3 letters
-  const digits = customAlphabet('0123456789', 3)(); // 3 digits
-  return `${letters}${digits}`;
+// // Ensure the format is ABC123 by enforcing the first 3 as letters and last 3 as digits
+// const generateCustomZerodhaID = async()=> {
+//   const letters = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZ', 3)(); // 3 letters
+//   const digits = customAlphabet('0123456789', 3)(); // 3 digits
+//   return `${letters}${digits}`;
   
+// }
+
+//   DBConnection().then(()=>{
+//     console.log("CONNECTEDDD");
+//   })
+
+// const getuserZID = async()=>{
+
+//   let ZID = 'COD123'// await generateCustomZerodhaID();
+
+//   let user = await userModel.findOne({userZID:ZID}) ;
+//   console.log(user);
+
+//   while(user){
+//     ZID = await generateCustomZerodhaID();
+//     console.log(ZID);
+//     user = await userModel.findOne({userZID:'COD123'});
+//   }
+  
+//   return ZID;
+
+// }
+
+
+
+// getuserZID().then((data)=>{console.log(data)});
+
+
+const imagePath = {
+  path:'Ahsan:66fc601d8555c72c8e3bbedf/tommy.jpg'
 }
 
-  DBConnection().then(()=>{
-    console.log("CONNECTEDDD");
-  })
+//let path = 'Ahsan:66fc601d8555c72c8e3bbedf/tommy.jpg'
 
-const getuserZID = async()=>{
+const data = (imagePath.path).split('/').slice(0, -1).join('/');
 
-  let ZID = 'COD123'// await generateCustomZerodhaID();
-
-  let user = await userModel.findOne({userZID:ZID}) ;
-  console.log(user);
-
-  while(user){
-    ZID = await generateCustomZerodhaID();
-    console.log(ZID);
-    user = await userModel.findOne({userZID:'COD123'});
-  }
-  
-  return ZID;
-
-}
-
-
-
-getuserZID().then((data)=>{console.log(data)});
-
+console.log(data);
 
 // const getEnc = ()=>{
 //   const pass = bcrypt.hashSync('786pakistan');

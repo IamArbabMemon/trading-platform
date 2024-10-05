@@ -349,7 +349,7 @@ const updateAdhaar = async (req, res, next) => {
 
       newUser.profilePhoto = publicPath;
 
-      newUser.profileLocalPath = imagePath.fullPath;
+      newUser.profileLocalPath =imagePath.path;
 
       await newUser.save();
 
@@ -421,7 +421,7 @@ const finalizeIntitialRegistration = async(req,res,next)=>{
           throw new ErrorResponse("USER NOT FOUND",404);          
 
         if(!(findUser.OTP === otp)){
-            await tempInitialRegistrationModel.deleteOne({email:email});
+            await tempInitialRegistrationModel.deleteMany({email:email});
           throw new ErrorResponse("OTP NOT MATCHED",400); 
         }         
 
@@ -435,7 +435,7 @@ const finalizeIntitialRegistration = async(req,res,next)=>{
           password:findUser.password
         });
 
-        await tempInitialRegistrationModel.deleteOne({email:email});
+        await tempInitialRegistrationModel.deleteMany({email:email});
 
         return res.status(201).json({
           message: 'User Initial Regisration has been completed!',
@@ -505,10 +505,10 @@ const userLoginStep1 = async(req,res,next)=>{
 const userLoginStep2 = async(req,res,next)=>{
 
   try {
+    console.log("logging has been hitting")
     const {userZID,OTP} = req.body;
   
-      console.log(req.body);
-
+    
     if(!userZID || !OTP)
         throw new ErrorResponse("OTP OR USERZID IS MISSING",400);
     
@@ -545,7 +545,9 @@ const userLoginStep2 = async(req,res,next)=>{
       await tempForLoginModel.deleteMany({userZID:userZID});
 
         res.cookie('token', token, {
-         httpOnly: true,
+          httpOnly:true,
+        //  sameSite:'None',
+        path:'/'
      });
 
      return res.status(200).json({message:"Access token has been set",token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString()}});
@@ -571,7 +573,8 @@ const userLogout = async(req,res,next)=>{
 
              // Clear the token from the cookie
              res.clearCookie('token', {
-              httpOnly: true
+              httpOnly: true,
+              sameSite:'None'
           });
   
           // Send response confirming logout
@@ -714,8 +717,6 @@ const updateUserProfileDetails = async(req,res,next)=>{
        const {userDetailsObject} = req.body; 
 
        const user = await userModel.findById(req.user.userObjectID);
-
-      
 
 
   } catch (err) {
