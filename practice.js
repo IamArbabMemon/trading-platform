@@ -111,9 +111,9 @@ import { get } from 'mongoose';
 
 // )();
 
-// import { customAlphabet }  from 'nanoid';
-// import { DBConnection } from './src/db/index.js';
-// import { userModel } from './src/models/user.model.js';
+import { customAlphabet }  from 'nanoid';
+import { DBConnection } from './src/db/index.js';
+import { userModel } from './src/models/user.model.js';
 // // Create a custom alphabet for uppercase letters and digits
 // //const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 // //const generateZerodhaID = customAlphabet(alphabet, 6); // 6 characters long
@@ -126,9 +126,30 @@ import { get } from 'mongoose';
   
 // }
 
-//   DBConnection().then(()=>{
-//     console.log("CONNECTEDDD");
-//   })
+  // DBConnection().then(()=>{
+  //   console.log("CONNECTEDDD");
+  // })
+
+
+  const getData = async()=>{
+    
+    
+const response = await fetch('https://jsonplaceholder.typicode.com/todos/1');
+
+console.log(response.ok);
+console.log(response.status);
+
+const data = await response.json();
+
+console.log(data);
+
+  }
+
+getData();
+  
+
+
+
 
 // const getuserZID = async()=>{
 
@@ -152,15 +173,9 @@ import { get } from 'mongoose';
 // getuserZID().then((data)=>{console.log(data)});
 
 
-const imagePath = {
-  path:'Ahsan:66fc601d8555c72c8e3bbedf/tommy.jpg'
-}
 
 //let path = 'Ahsan:66fc601d8555c72c8e3bbedf/tommy.jpg'
 
-const data = (imagePath.path).split('/').slice(0, -1).join('/');
-
-console.log(data);
 
 // const getEnc = ()=>{
 //   const pass = bcrypt.hashSync('786pakistan');

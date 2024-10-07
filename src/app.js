@@ -1,7 +1,7 @@
 import express from 'express';
 import { router as userRouter} from './routes/user.routes.js';
 import {router as adminRouter } from './routes/admin.routes.js'
-import cors from 'cors'
+//import cors from 'cors'
 import cookieParser from 'cookie-parser';
 import { errorHandler } from './middlewares/errorHandling.middleware.js';
 
@@ -27,7 +27,7 @@ app.use(express.json());
 //   credentials: true, // Allow credentials (cookies, authorization headers, etc.)
 // };
 
-app.use(cors({origin:true,credentials:true}));
+//app.use(cors());
 
 app.use(express.urlencoded({extended:true}));
 app.use(cookieParser());
@@ -36,17 +36,14 @@ app.use('/api/v1/user',userRouter);
 
 app.use('/api/v1/admin',adminRouter);
 
-app.get('/get-token',(req,res)=>{
+app.get('/get',(req,res)=>{
     console.log("hitting get token");
 
-    res.cookie('token', "I am tokeeennnn", {
-        httpOnly:true,
-       path:'/',
-//       credentials:true
+    return res.status(200).json({message:"giving you access"});
+
    });
     
-    return res.status(200).json({message:"giving you access"});
-})
+    
 
 
 // app.use('/hello',(req,res)=>res.send())

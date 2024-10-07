@@ -506,6 +506,7 @@ const userLoginStep2 = async(req,res,next)=>{
 
   try {
     console.log("logging has been hitting")
+    
     const {userZID,OTP} = req.body;
   
     
@@ -527,8 +528,6 @@ const userLoginStep2 = async(req,res,next)=>{
 
 
         const detailedUser = await userModel.findOne({userZID:userZID});
-    
-      // const token = await jwt.sign({username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID}, process.env.JWT_SECRET_KEY);
 
       const token = await jwt.sign(
         {
@@ -544,13 +543,7 @@ const userLoginStep2 = async(req,res,next)=>{
         
       await tempForLoginModel.deleteMany({userZID:userZID});
 
-        res.cookie('token', token, {
-          httpOnly:true,
-        //  sameSite:'None',
-        path:'/'
-     });
-
-     return res.status(200).json({message:"Access token has been set",token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString()}});
+     return res.status(200).json({message:"Access token has been set",token:token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString()}});
 
        
   } catch (err) {
@@ -560,30 +553,28 @@ const userLoginStep2 = async(req,res,next)=>{
 
 };
 
+
 const userLogout = async(req,res,next)=>{
   try{
 
-          // console.log("logging out",req.cookies.token);
 
-          console.log("token from coookieee", req.cookies.token)
 
-          console.log("logging out");
+        console.log("logging out");
+
+
            if(!req.user)
               throw new ErrorResponse('User is not logged in or authenticated',400);
 
-             // Clear the token from the cookie
-             res.clearCookie('token', {
-              httpOnly: true
-          });
-  
-          // Send response confirming logout
-          return res.status(200).json({ message: "You have successfully logged out." });
+
+          return res.status(200).json({message:"user has been logout"});
 
 
   }catch(err){
      next(err);
   }
+
 };
+
 
 
 const forgetPasswordStep1 = async(req,res,next)=>{
