@@ -5,6 +5,7 @@ const accountSchema = new mongoose.Schema({
     accountNumber: { 
       type: String,                                                  
       required: true,
+      sparse:true,
       validate: {
         validator: function (v) {
           return /\d{9,18}/.test(v);  // Bank account number validation
@@ -63,6 +64,7 @@ const accountSchema = new mongoose.Schema({
   upiId: {
     type: String,
     unique: true,
+    sparse:true,
     validate: {
       validator: function (v) {
 

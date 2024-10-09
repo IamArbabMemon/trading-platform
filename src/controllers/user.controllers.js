@@ -355,7 +355,7 @@ const updateAdhaar = async (req, res, next) => {
 
       return res.status(201).json({
         message: 'User Profile picture has been uploaded!',
-        user: {username:newUser.username,userObjectID:newUser._id.toString()},
+        user: {username:newUser.username,userObjectID:newUser._id.toString(),profilePicURL:publicPath},
       });
 
      }catch(err){
@@ -369,10 +369,12 @@ const updateAdhaar = async (req, res, next) => {
 
     try{
    
-     const {userObjectID} = req.body;
+     //const {userObjectID} = req.body;
      
-      if(!userObjectID) 
-       throw new ErrorResponse("User ObjectID missing",400);
+      if(!req.user)
+      throw new ErrorResponse("User is not logged in ",400);
+
+      const userObjectID = req.user.userObjectID;
 
      if(!req.file)
        throw new ErrorResponse("PLEASE UPLOAD PROFILE PICTURE . PICTURE IS MISSING",400);
@@ -393,9 +395,11 @@ const updateAdhaar = async (req, res, next) => {
 
      await newUser.save();
 
+      console.log(newProfilePicPath);
+
      return res.status(201).json({
        message: 'User Profile picture has been updated!',
-       user: {username:newUser.username,userObjectID:newUser._id.toString()},
+       user: {username:newUser.username,userObjectID:newUser._id.toString(),profilePicURL:newProfilePicPath},
      });
 
     }catch(err){
@@ -543,7 +547,7 @@ const userLoginStep2 = async(req,res,next)=>{
         
       await tempForLoginModel.deleteMany({userZID:userZID});
 
-     return res.status(200).json({message:"Access token has been set",token:token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString()}});
+     return res.status(200).json({message:"Access token has been set",token:token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString(),profilePic:detailedUser.profilePhoto}});
 
        
   } catch (err) {
@@ -678,7 +682,8 @@ const insertBankAccountInfo = async(req,res,next)=>{
 
         const userBio = await userModel.findById(userObjectID);
 
-
+        if(!userBio)
+        throw new ErrorResponse("User initial registration has not been done",400);
 
       const data = await accountModel.create({
         bankDetails:bankDetails,
@@ -704,10 +709,18 @@ const updateUserProfileDetails = async(req,res,next)=>{
       if(!req.user)
           throw new ErrorResponse("User is not logged in ",400);
 
-       const {userDetailsObject} = req.body; 
+       const {newEmail} = req.body; 
 
        const user = await userModel.findById(req.user.userObjectID);
 
+      if(!user)
+      throw new ErrorResponse("User not found",400);
+
+       user.email = newEmail;
+
+       await user.save();
+
+       return res.status(200).json({message:'user details has been updated'});
 
   } catch (err) {
     next(err);
@@ -721,10 +734,24 @@ const getUser = async(req,res,next)=>{
       if(!req.user)
           throw new ErrorResponse("User is not logged in ",400);
 
-      const user = await userModel.findById(req.user.userObjectID).select('username email mobileNumber userZID profilePhoto');
+      let user = await userModel.findById(req.user.userObjectID).select('username email mobileNumber userZID profilePhoto aadhaar pan role dob address').lean();
+
+      const account = await accountModel.findOne({user:user});
+
+      if(!account)
+      throw new ErrorResponse("User Account not found",404); 
 
       if(!user)
         throw new ErrorResponse("User not found",404); 
+
+        console.log(account.bankDetails);
+
+//        user.bankDetails = account.bankDetails;  
+        user = {
+          ...user, // Spread the existing user properties (if any)
+          bankDetails: account.bankDetails // Add bankDetails
+      };
+      
 
       return res.status(200).json({message:'user has been fetched succesfully',user:user});
 
@@ -778,5 +805,6 @@ export{
     insertBankAccountInfo,
     forgetPasswordStep2,
     getUser,
-    getUserByID
+    getUserByID,
+    updateUserProfileDetails
 };

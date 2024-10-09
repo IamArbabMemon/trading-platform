@@ -47,11 +47,25 @@ const userSchema = new mongoose.Schema({
     //   },
     // },
   },
+  // aadhaar: {
+  //   type: String,
+  //   trim: true,
+  //   unique: true,
+  //   // required:true,
+  //   validate: {
+  //     validator: function (v) {
+  //       return v ? /\d{12}/.test(v) : true; // Aadhaar number should have 12 digits or can be empty initially
+  //     },
+  //     message: props => `${props.value} is not a valid Aadhaar number!`,
+  //   },
+  //   default: null,
+  // },
+
   aadhaar: {
     type: String,
     trim: true,
     unique: true,
-    // required:true,
+    sparse: true, // Only non-null values will be checked for uniqueness
     validate: {
       validator: function (v) {
         return v ? /\d{12}/.test(v) : true; // Aadhaar number should have 12 digits or can be empty initially
@@ -60,7 +74,7 @@ const userSchema = new mongoose.Schema({
     },
     default: null,
   },
-
+  
   dob:{
     type:Date
   },
@@ -70,6 +84,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     trim: true,
     // required:true,
+    sparse:true,
     validate: {
       validator: function (v) {
 
@@ -139,6 +154,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     //required: true,
     unique: true,
+    sparse:true,
     validate: {
       validator: function (v) {
         // Check if the value is not empty and if it meets length and pattern requirements.

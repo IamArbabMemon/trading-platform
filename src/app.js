@@ -1,7 +1,7 @@
 import express from 'express';
 import { router as userRouter} from './routes/user.routes.js';
 import {router as adminRouter } from './routes/admin.routes.js'
-//import cors from 'cors'
+import cors from 'cors'
 import cookieParser from 'cookie-parser';
 import { errorHandler } from './middlewares/errorHandling.middleware.js';
 
@@ -10,6 +10,8 @@ const app = express();
 
 
 app.use(express.json());
+
+app.use(cors({origin:true}));
 
 // const whitelist = ['http://localhost:3000', 'https://3bb2-137-59-221-159.ngrok-free.app/login','https://3bb2-137-59-221-159.ngrok-free.app']; // Add your frontend URLs here
 
