@@ -685,6 +685,8 @@ const insertBankAccountInfo = async(req,res,next)=>{
         if(!userBio)
         throw new ErrorResponse("User initial registration has not been done",400);
 
+
+
       const data = await accountModel.create({
         bankDetails:bankDetails,
         user:userObjectID,
@@ -692,6 +694,10 @@ const insertBankAccountInfo = async(req,res,next)=>{
       });
 
       console.log(data);
+
+     userBio.account=data._id;
+     
+     await userBio.save();
 
       return res.status(200).json({message:"Bank Info has been successfully inserted"});
 

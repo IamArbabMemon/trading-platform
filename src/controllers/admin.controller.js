@@ -36,13 +36,68 @@ const getUsers = async(req,res,next)=>{
               kycStatus = 'pending';  
 
         if(!status)
-            status = "active"
-
+            status = "frozen"
         
-        const users = await userModel
-  .find({ kycStatus: kycStatus,status:status}) // Match documents based on kycStatus and status
-  .select('username email mobileNumber userZID aadhaar pan kycStatus country'); // Select specific fields
-
+            const users =  await userModel.aggregate([
+                  {
+                    $match: {
+                      $and: [
+                        { kycStatus: kycStatus },
+                        { status: status } // Match users based on kycStatus
+                        // Additional conditions can be passed in here
+                      ]
+                    }
+                  },
+                  {
+                    $lookup: {
+                      from: "accounts", // The name of the collection to join with
+                      localField: "account", // Field from the User collection
+                      foreignField: "_id", // Field from the Account collection
+                      as: "accountDetails" // Output field for account details
+                    }
+                  },
+                  {
+                    $unwind: {
+                      path: "$accountDetails",
+                      preserveNullAndEmptyArrays: true // Preserve users with no matching account
+                    }
+                  },
+                  {
+                    $unwind: {
+                      path: "$accountDetails.bankDetails", // Unwind the bankDetails array (if it's an array)
+                      preserveNullAndEmptyArrays: true // In case bankDetails is empty or null
+                    }
+                  },
+                  {
+                    $project: {
+                      username: 1,
+                      email: 1,
+                      mobileNumber: 1,
+                      address: 1,
+                      kycStatus: 1,
+                      status: 1,
+                      role: 1,
+                      profilePhoto: 1,
+                      profileLocalPath: 1,
+                      signature: 1,
+                      aadhaar: 1,
+                      pan: 1,
+                      // Include all the fields from accountDetails, including bankDetails
+                      "accountDetails._id": 1,
+                      "accountDetails.user": 1,
+                      "accountDetails.incomeProof": 1,
+                      "accountDetails.role": 1,
+                      "accountDetails.createdAt": 1,
+                      "accountDetails.updatedAt": 1,
+                      "accountDetails.bankDetails.bankName": 1,      // Project bankName from bankDetails
+                      "accountDetails.bankDetails.accountNumber": 1, // Project accountNumber from bankDetails
+                      "accountDetails.bankDetails.ifsc": 1,          // Project ifsc from bankDetails
+                      "accountDetails.bankDetails.micrCode": 1,      // Project micrCode from bankDetails
+                      "accountDetails.bankDetails.branchName": 1     // Project branchName from bankDetails
+                    }
+                  }
+                ]);
+        
         console.log(users);
             
         return res.status(200).json(users);
@@ -51,6 +106,164 @@ const getUsers = async(req,res,next)=>{
         next(err)
     }
 }
+
+
+
+
+const getUsersByKYC = async(req,res,next)=>{
+  try {
+      let {kycStatus} = req.query;
+        
+        if(!kycStatus){
+            kycStatus = 'pending';
+          }
+      
+  
+          const users =  await userModel.aggregate([
+                {
+                  $match: {
+                    kycStatus: kycStatus 
+                      // Match users based on kycStatus
+                      // Additional conditions can be passed in here
+                  }
+                },
+                {
+                  $lookup: {
+                    from: "accounts", // The name of the collection to join with
+                    localField: "account", // Field from the User collection
+                    foreignField: "_id", // Field from the Account collection
+                    as: "accountDetails" // Output field for account details
+                  }
+                },
+                {
+                  $unwind: {
+                    path: "$accountDetails",
+                    preserveNullAndEmptyArrays: true // Preserve users with no matching account
+                  }
+                },
+                {
+                  $unwind: {
+                    path: "$accountDetails.bankDetails", // Unwind the bankDetails array (if it's an array)
+                    preserveNullAndEmptyArrays: true // In case bankDetails is empty or null
+                  }
+                },
+                {
+                  $project: {
+                    username: 1,
+                    email: 1,
+                    mobileNumber: 1,
+                    address: 1,
+                    kycStatus: 1,
+                    status: 1,
+                    role: 1,
+                    profilePhoto: 1,
+                    profileLocalPath: 1,
+                    signature: 1,
+                    aadhaar: 1,
+                    pan: 1,
+                    // Include all the fields from accountDetails, including bankDetails
+                    "accountDetails._id": 1,
+                    "accountDetails.user": 1,
+                    "accountDetails.incomeProof": 1,
+                    "accountDetails.role": 1,
+                    "accountDetails.createdAt": 1,
+                    "accountDetails.updatedAt": 1,
+                    "accountDetails.bankDetails.bankName": 1,      // Project bankName from bankDetails
+                    "accountDetails.bankDetails.accountNumber": 1, // Project accountNumber from bankDetails
+                    "accountDetails.bankDetails.ifsc": 1,          // Project ifsc from bankDetails
+                    "accountDetails.bankDetails.micrCode": 1,      // Project micrCode from bankDetails
+                    "accountDetails.bankDetails.branchName": 1     // Project branchName from bankDetails
+                  }
+                }
+              ]);
+      
+      console.log(users);
+          
+      return res.status(200).json(users);
+
+  } catch (err) {
+      next(err)
+  }
+}
+
+
+const getUsersByStatus = async(req,res,next)=>{
+  try {
+      let {status} = req.query;
+        
+        if(!status){
+            status = 'active';
+          }
+      
+  
+          const users =  await userModel.aggregate([
+                {
+                  $match: {
+                    status: status 
+                      // Match users based on kycStatus
+                      // Additional conditions can be passed in here
+                  }
+                },
+                {
+                  $lookup: {
+                    from: "accounts", // The name of the collection to join with
+                    localField: "account", // Field from the User collection
+                    foreignField: "_id", // Field from the Account collection
+                    as: "accountDetails" // Output field for account details
+                  }
+                },
+                {
+                  $unwind: {
+                    path: "$accountDetails",
+                    preserveNullAndEmptyArrays: true // Preserve users with no matching account
+                  }
+                },
+                {
+                  $unwind: {
+                    path: "$accountDetails.bankDetails", // Unwind the bankDetails array (if it's an array)
+                    preserveNullAndEmptyArrays: true // In case bankDetails is empty or null
+                  }
+                },
+                {
+                  $project: {
+                    username: 1,
+                    email: 1,
+                    mobileNumber: 1,
+                    address: 1,
+                    kycStatus: 1,
+                    status: 1,
+                    role: 1,
+                    profilePhoto: 1,
+                    profileLocalPath: 1,
+                    signature: 1,
+                    aadhaar: 1,
+                    pan: 1,
+                    // Include all the fields from accountDetails, including bankDetails
+                    "accountDetails._id": 1,
+                    "accountDetails.user": 1,
+                    "accountDetails.incomeProof": 1,
+                    "accountDetails.role": 1,
+                    "accountDetails.createdAt": 1,
+                    "accountDetails.updatedAt": 1,
+                    "accountDetails.bankDetails.bankName": 1,      // Project bankName from bankDetails
+                    "accountDetails.bankDetails.accountNumber": 1, // Project accountNumber from bankDetails
+                    "accountDetails.bankDetails.ifsc": 1,          // Project ifsc from bankDetails
+                    "accountDetails.bankDetails.micrCode": 1,      // Project micrCode from bankDetails
+                    "accountDetails.bankDetails.branchName": 1     // Project branchName from bankDetails
+                  }
+                }
+              ]);
+      
+      console.log(users);
+          
+      return res.status(200).json(users);
+
+  } catch (err) {
+      next(err)
+  }
+}
+
+
 
 const approveUser = async(req,res,next)=>{
     try {
@@ -123,5 +336,7 @@ export {
     getAllUsers,
     getUsers,
     approveUser,
-    rejectUser
+    rejectUser,
+    getUsersByKYC,
+    getUsersByStatus
 }

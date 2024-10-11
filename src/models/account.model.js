@@ -13,7 +13,7 @@ const accountSchema = new mongoose.Schema({
         message: props => `${props.value} is not a valid bank account number!`
       },
 
-      default:null
+      default:undefined
     },
     
     micrCode: {
@@ -46,13 +46,14 @@ const accountSchema = new mongoose.Schema({
   user:{
     type:mongoose.Schema.Types.ObjectId,
     unique:true,
-    required:true
+    sparse:true,
+    default:undefined
   },
 
   incomeProof: {
     type: String,  // File path to the uploaded income proof
     required: false,
-     default:null   // Required only for F&O trading
+     default:undefined   // Required only for F&O trading
   },
 
   accountType: {
@@ -76,13 +77,18 @@ const accountSchema = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valid UPI ID!`
     },
-    default:null
+    default:undefined
   },
 
   role: {
     type: String,
     enum: ['user', 'admin'],
     default: 'user',
+  },
+
+  accountBalance:{
+    type:Number,
+    default:undefined
   }
 
 },{timestamps:true});

@@ -10,6 +10,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
+    sparse:true,
     trim: true,
     lowercase: true,
   },
@@ -17,6 +18,7 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
     required: true,
+    sparse:true,
     unique: true,
     validate: {
       validator: function (v) {
@@ -72,7 +74,7 @@ const userSchema = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valid Aadhaar number!`,
     },
-    default: null,
+    default: undefined
   },
   
   dob:{
@@ -92,7 +94,7 @@ const userSchema = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valid PAN number!`,
     },
-    default: null,
+    default: undefined
   },
 
   profilePhoto: {
@@ -128,7 +130,7 @@ const userSchema = new mongoose.Schema({
   status:{
     type: String,
     enum: ['active', 'frozen'],
-    default: 'frozen',
+    default: 'active',
   },
   
   role: {
@@ -149,6 +151,14 @@ const userSchema = new mongoose.Schema({
     default:null
   },
 
+  account:{
+    type:mongoose.Schema.Types.ObjectId,
+    unique:true,
+    sparse:true,
+    default:undefined
+  },
+
+
   userZID :{
   
     type: String,
@@ -162,7 +172,8 @@ const userSchema = new mongoose.Schema({
       },
       message: props => `${props.value} is not a valid Zerodha ID! It should be exactly 6 characters long, containing uppercase letters or numbers.`,
     },
-    default:null
+
+    default:undefined
 }  
 
 },{timestamps:true});
