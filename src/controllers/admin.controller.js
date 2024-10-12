@@ -1,8 +1,11 @@
-import { rejectionEmailText } from "../mailTemplates.js";
+import { accountFreezeEmailText, rejectionEmailText } from "../mailTemplates.js";
+import { adminModel } from "../models/admin.model.js";
+import { tempForForgetPasswordAdminModel } from "../models/tempForForgetPasswordAdmin.model.js";
+import { tempForLoginAdminModel } from "../models/tempForLoginAdmin.model.js";
 import { userModel } from "../models/user.model.js";
 import { ErrorResponse } from "../utils/errorResponse.js"
 import { getUserZID } from "../utils/generateUserZID.js";
-import { sendOTPMail, sendRejectionMail, sendWelcomeMail } from "../utils/mailer.js";
+import { sendAccountFreezeMail, sendOTPMail, sendRejectionMail, sendWelcomeMail } from "../utils/mailer.js";
 import { getUserByID, registerUserStep1 } from "./user.controllers.js";
 
 
@@ -29,6 +32,14 @@ const getAllUsers = async(req,res,next)=>{
 
 const getUsers = async(req,res,next)=>{
     try {
+
+      if(!req.user)
+        throw new ErrorResponse("admin is not logged in ",400);
+
+    if(req.user.role!=='admin')
+        throw new ErrorResponse("User do not have admin rights to get users ",400);  
+
+
         let {kycStatus} = req.query;
         let {status} = req.query;
         
@@ -112,7 +123,14 @@ const getUsers = async(req,res,next)=>{
 
 const getUsersByKYC = async(req,res,next)=>{
   try {
-      let {kycStatus} = req.query;
+
+    if(!req.user)
+      throw new ErrorResponse("admin is not logged in ",400);
+
+  if(req.user.role!=='admin')
+      throw new ErrorResponse("User do not have admin rights to get user info ",400);
+
+    let {kycStatus} = req.query;
         
         if(!kycStatus){
             kycStatus = 'pending';
@@ -189,6 +207,14 @@ const getUsersByKYC = async(req,res,next)=>{
 
 const getUsersByStatus = async(req,res,next)=>{
   try {
+
+    if(!req.user)
+      throw new ErrorResponse("admin is not logged in ",400);
+
+  if(req.user.role!=='admin')
+      throw new ErrorResponse("User do not have admin rights to get users status ",400);
+
+
       let {status} = req.query;
         
         if(!status){
@@ -267,7 +293,14 @@ const getUsersByStatus = async(req,res,next)=>{
 
 const approveUser = async(req,res,next)=>{
     try {
-        
+
+      if(!req.user)
+        throw new ErrorResponse("admin is not logged in ",400);
+  
+    if(req.user.role!=='admin')
+        throw new ErrorResponse("User do not have admin rights to approve user",400);
+  
+
         const {aadhaar} = req.body;
 
         if(!aadhaar)
@@ -303,6 +336,13 @@ const approveUser = async(req,res,next)=>{
 
 const rejectUser = async(req,res,next)=>{
     try {
+
+      if(!req.user)
+        throw new ErrorResponse("admin is not logged in ",400);
+  
+    if(req.user.role!=='admin')
+        throw new ErrorResponse("User do not have admin rights to reject user ",400);
+  
         
         const {aadhaar} = req.body;
 
@@ -329,6 +369,283 @@ const rejectUser = async(req,res,next)=>{
 }
 
 
+const adminLoginStep1 = async(req,res,next)=>{
+
+  try {
+    const {username,password} = req.body;
+
+    console.log(req.body);
+  
+    if(!username || !password)
+        throw new ErrorResponse("Login Credential missing",400);
+
+    const user= await adminModel.findOne({username:username});
+
+  console.log(user);
+
+    if(!user)
+      throw new ErrorResponse("Admin not found",404);
+
+      
+    const passIsCorrect = await bcrypt.compare(password,user.password);
+
+    console.log(passIsCorrect);
+
+    if(!passIsCorrect)
+      throw new ErrorResponse("username or password is incorrect",400);
+
+    const OTP = await generateOTP();
+
+    console.log(OTP);
+
+    const result = await sendOTPMail({text:loginOTPText,otp:OTP,email:user.email,subject:"Login OTP"});
+
+    if(!result)
+      throw new ErrorResponse("FAILED TO SEND OTP",500);
+
+    await tempForLoginAdminModel.create({
+          username:username,
+          OTP:OTP
+    });
+
+    return res.status(201).json({
+      message: 'LOGIN OTP HAS BEEN SENT SUCCESSFULLY TO THE ADMIN!'
+    });
+
+
+  } catch (err) {
+    next(err);
+  }
+
+
+}
+
+
+const adminLoginStep2 = async(req,res,next)=>{
+
+  try {
+    console.log("admin logging has been hitting")
+    
+    const {username,OTP} = req.body;
+  
+    
+    if(!username || !OTP)
+        throw new ErrorResponse("OTP OR USERZID IS MISSING",400);
+    
+    
+    const findUser = await tempForLoginAdminModel.findOne({username:username});
+
+    console.log(findUser);
+
+      if(!findUser)
+        throw new ErrorResponse("Admin credentials are missing username not found",400);
+
+      if(!(findUser.OTP === OTP)){
+        await tempForLoginAdminModel.deleteMany({username:username});
+        throw new ErrorResponse("OTP NOT MATCHED",400);          
+      }
+
+
+        const detailedUser = await adminModel.findOne({username:username});
+
+      const token = await jwt.sign(
+        {
+          username: detailedUser.username,
+          userRole: detailedUser.role,
+          userObjectID : detailedUser._id.toString()
+        },
+        process.env.JWT_SECRET_KEY,
+        { expiresIn: '1h' } // Set the token to expire in 1 hour
+      );
+      
+        
+      await tempForLoginAdminModel.deleteMany({username:username});
+
+     return res.status(200).json({message:"Access token has been set",token:token, userData:{username:detailedUser.username,userRole:detailedUser.role,userObjectID:detailedUser._id.toString(),profilePic:detailedUser.profilePhoto}});
+   
+  } catch (err) {
+    next(err);
+  }
+
+
+};
+
+const registerAdmin = async (req, res, next) => {
+  try {
+
+    if(!req.user)
+      throw new ErrorResponse("admin is not logged in ",400);
+
+  if(req.user.role!=='admin')
+      throw new ErrorResponse("User do not have admin rights to add another admin ",400);
+
+
+
+    // Destructure the fields from the request body
+    const {
+      username,
+      email,
+      mobileNumber,
+      address,
+      role,
+      password,
+      aadhaar,
+      pan
+    } = req.body;
+
+    const checkUserExist = await adminModel.findOne({email:email});
+    
+    if(checkUserExist)
+      throw new ErrorResponse("Email is already in used",400);
+
+    // Check if all required fields are provided
+    if (!username || !email || !mobileNumber || !role || !address || !password || !aadhaar || !pan) {
+      throw new ErrorResponse("Please provide all the required fields",400);
+    }
+
+    // Create a new user instance with the provided data
+    
+    // const data = {
+    //   text : registrationText,
+    //   otp:OTP,
+    //   subject:"OTP FOR REGISTRATION PROCESS",
+    //   email:email
+    // }
+
+   // const result = await sendOTPMail(data);
+    
+    // if(!result)
+    //   throw new ErrorResponse("FAILED TO SEND OTP",500);
+
+    const hashedPassword = await bcrypt.hash(password,10);
+
+    const newUser = await tempInitialRegistrationModel.create({
+      username,
+      email,
+      mobileNumber,
+      address,
+      role,
+      aadhaar,
+      pan,
+      password:hashedPassword
+    });
+
+    console.log("Registered Admin :", newUser);
+
+       // Send a success response with the saved user data
+    return res.status(201).json({
+      message: 'OTP HAS BEEN SENT SUCCESSFULLY!'
+    });
+  } catch (error) {
+    // If there are validation errors or other issues, pass them to the error handler middleware
+    next(error);
+  }
+};
+
+
+
+
+const adminForgetPasswordStep1 = async(req,res,next)=>{
+
+  try {
+    const {username} = req.body;
+
+    if(!username)
+      throw new ErrorResponse("username is missin from request body",400);
+
+    const findUser = await adminModel.findOne({username:username});
+
+    if(!findUser)
+      throw new ErrorResponse("admin not found or wrong user ID",404);
+
+    const OTP = await generateOTP();
+
+     const result = await sendOTPMail({text:forgetPasswordText,email:findUser.email,otp:OTP,subject:"ADMIN FORGET PASSWORD OTP"});
+     
+     if(!result)
+      throw new ErrorResponse("Failed to send OTP email",500);
+
+     await tempForForgetPasswordAdminModel.create({
+      username:username,
+      OTP:OTP
+     });
+
+     return res.status(200).json({message:"OTP HAS BEEN SENT TO THE ADMIN"});
+
+  } catch (err) {
+    next(err);
+  }
+ 
+};
+
+
+const adminForgetPasswordStep2 = async(req,res,next)=>{
+
+try {
+  const {username,OTP,newPassword} = req.body;
+
+    if(!userZID || !OTP || !newPassword)
+      throw new ErrorResponse("Request body data is missing some field",400);
+
+  const isOTPCorrect = await tempForForgetPasswordAdminModel.findOne({ username: username, OTP: OTP });
+
+  if(!isOTPCorrect){
+    await tempForForgetPasswordAdminModel.deleteMany({username:username});
+    throw new ErrorResponse("OTP NOT MATCHED",400);
+  }
+
+    const hashedPassword = await bcrypt.hash(newPassword,10);
+
+    const user = await adminModel.findOne({username:username});
+
+    user.password = hashedPassword;
+
+    await user.save();
+
+  return res.status(200).json({message:"Password has been changed successfully"});
+
+} catch (err) {
+  next(err);
+}
+
+};
+
+
+
+const freezeUser = async(req,res,next)=>{
+  try {
+
+    if(!req.user)
+      throw new ErrorResponse("admin is not logged in ",400);
+
+  if(req.user.role!=='admin')
+      throw new ErrorResponse("User do not have admin rights to reject user ",400);
+
+      
+      const {status,aadhaar} = req.body;
+
+      if(!status || !aadhaar)
+          throw new ErrorResponse("status or aadhaar is missing from request body",400);
+
+      const user = await userModel.findOne({aadhaar:aadhaar});
+
+      if(!user)
+          throw new ErrorResponse("User not found. Wrong aadhaar number ",400);
+
+      const result = await sendAccountFreezeMail({username:user.username,text:accountFreezeEmailText,email:user.email});
+
+      if(!result)
+          throw new ErrorResponse("Error in sending email for account freeze ",500);
+      
+      await userModel.deleteOne({aadhaar:user.aadhaar});
+
+     return res.status(200).json({message:"user account has been freezed and email has been sent"}); 
+
+  } catch (err) {
+      next(err);
+  }
+
+}
 
 
 
@@ -338,5 +655,11 @@ export {
     approveUser,
     rejectUser,
     getUsersByKYC,
-    getUsersByStatus
+    getUsersByStatus,
+    adminLoginStep1,
+    adminLoginStep2,
+    registerAdmin,
+    adminForgetPasswordStep1,
+    adminForgetPasswordStep2,
+    freezeUser
 }

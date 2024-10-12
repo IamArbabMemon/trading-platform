@@ -623,7 +623,7 @@ const forgetPasswordStep2 = async(req,res,next)=>{
     const isOTPCorrect = await tempForForgetPasswordModel.findOne({ userZID: userZID, OTP: OTP });
 
     if(!isOTPCorrect){
-      await tempForForgetPasswordModel.deleteOne({userZID:userZID});
+      await tempForForgetPasswordModel.deleteMany({userZID:userZID});
       throw new ErrorResponse("OTP NOT MATCHED",400);
     }
 

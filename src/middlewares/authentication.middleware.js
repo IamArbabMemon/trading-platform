@@ -27,6 +27,9 @@ const checkAuthentication = async (req,res,next)=>{
 
         const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY);
 
+        if(!decoded)
+            throw new ErrorResponse('Authentication failed with jwt', 401);
+
         // Attach the decoded user data to the request object
         req.user = decoded;
 
@@ -37,7 +40,7 @@ const checkAuthentication = async (req,res,next)=>{
 
     }catch(err){
         console.log(err.statusCode);
-            next(err);
+      next(err);
     }
 
 }
