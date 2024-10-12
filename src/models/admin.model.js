@@ -86,8 +86,8 @@ const userSchema = new mongoose.Schema({
   
   role: {
     type: String,
-    enum: ['admin'],
-    default: 'admin',
+    enum: ['admin','moderator'],
+    default: 'moderator',
   },
 
   AdhaarCardPicture: {

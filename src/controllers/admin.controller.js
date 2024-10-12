@@ -1,11 +1,11 @@
-import { accountFreezeEmailText, rejectionEmailText } from "../mailTemplates.js";
+import { accountActivationEmailText, accountFreezeEmailText, rejectionEmailText } from "../mailTemplates.js";
 import { adminModel } from "../models/admin.model.js";
 import { tempForForgetPasswordAdminModel } from "../models/tempForForgetPasswordAdmin.model.js";
 import { tempForLoginAdminModel } from "../models/tempForLoginAdmin.model.js";
 import { userModel } from "../models/user.model.js";
 import { ErrorResponse } from "../utils/errorResponse.js"
 import { getUserZID } from "../utils/generateUserZID.js";
-import { sendAccountFreezeMail, sendOTPMail, sendRejectionMail, sendWelcomeMail } from "../utils/mailer.js";
+import { sendAccountActivationMail, sendAccountFreezeMail, sendOTPMail, sendRejectionMail, sendWelcomeMail } from "../utils/mailer.js";
 import { getUserByID, registerUserStep1 } from "./user.controllers.js";
 
 
@@ -15,7 +15,7 @@ const getAllUsers = async(req,res,next)=>{
         if(!req.user)
             throw new ErrorResponse("User is not logged in ",400);
 
-        if(req.user.role!=='admin')
+        if(req.user.role!=='admin' || req.user.role!=='moderator')
             throw new ErrorResponse("User do not have admin rights to get all users ",400);
 
         const allUsers = await userModel.find();
@@ -36,7 +36,7 @@ const getUsers = async(req,res,next)=>{
       if(!req.user)
         throw new ErrorResponse("admin is not logged in ",400);
 
-    if(req.user.role!=='admin')
+      if(req.user.role!=='admin' || req.user.role!=='moderator')
         throw new ErrorResponse("User do not have admin rights to get users ",400);  
 
 
@@ -47,7 +47,7 @@ const getUsers = async(req,res,next)=>{
               kycStatus = 'pending';  
 
         if(!status)
-            status = "frozen"
+            status = "active"
         
             const users =  await userModel.aggregate([
                   {
@@ -127,7 +127,7 @@ const getUsersByKYC = async(req,res,next)=>{
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-  if(req.user.role!=='admin')
+    if(req.user.role!=='admin' || req.user.role!=='moderator')
       throw new ErrorResponse("User do not have admin rights to get user info ",400);
 
     let {kycStatus} = req.query;
@@ -211,7 +211,7 @@ const getUsersByStatus = async(req,res,next)=>{
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-  if(req.user.role!=='admin')
+    if(req.user.role!=='admin' || req.user.role!=='moderator')
       throw new ErrorResponse("User do not have admin rights to get users status ",400);
 
 
@@ -297,7 +297,7 @@ const approveUser = async(req,res,next)=>{
       if(!req.user)
         throw new ErrorResponse("admin is not logged in ",400);
   
-    if(req.user.role!=='admin')
+      if(req.user.role!=='admin' || req.user.role!=='moderator')
         throw new ErrorResponse("User do not have admin rights to approve user",400);
   
 
@@ -340,7 +340,7 @@ const rejectUser = async(req,res,next)=>{
       if(!req.user)
         throw new ErrorResponse("admin is not logged in ",400);
   
-    if(req.user.role!=='admin')
+      if(req.user.role!=='admin' || req.user.role!=='moderator')
         throw new ErrorResponse("User do not have admin rights to reject user ",400);
   
         
@@ -476,8 +476,8 @@ const registerAdmin = async (req, res, next) => {
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-  if(req.user.role!=='admin')
-      throw new ErrorResponse("User do not have admin rights to add another admin ",400);
+    if(req.user.role!=='admin')
+      throw new ErrorResponse("moderator do not have admin rights to add another admin ",400);
 
 
 
@@ -618,7 +618,7 @@ const freezeUser = async(req,res,next)=>{
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-  if(req.user.role!=='admin')
+    if(req.user.role!=='admin' || req.user.role!=='moderator')
       throw new ErrorResponse("User do not have admin rights to reject user ",400);
 
       
@@ -632,6 +632,9 @@ const freezeUser = async(req,res,next)=>{
       if(!user)
           throw new ErrorResponse("User not found. Wrong aadhaar number ",400);
 
+      if(user.status==='frozen')
+        throw new ErrorResponse("User is already in frozen state ",400);
+
       const result = await sendAccountFreezeMail({username:user.username,text:accountFreezeEmailText,email:user.email});
 
       if(!result)
@@ -640,6 +643,44 @@ const freezeUser = async(req,res,next)=>{
       await userModel.deleteOne({aadhaar:user.aadhaar});
 
      return res.status(200).json({message:"user account has been freezed and email has been sent"}); 
+
+  } catch (err) {
+      next(err);
+  }
+
+}
+
+const activateUser = async(req,res,next)=>{
+  try {
+
+    if(!req.user)
+      throw new ErrorResponse("admin is not logged in ",400);
+
+  if(req.user.role!=='admin' || req.user.role!=='moderator')
+      throw new ErrorResponse("User do not have admin rights to reject user ",400);
+
+      
+      const {status,aadhaar} = req.body;
+
+      if(!status || !aadhaar)
+          throw new ErrorResponse("status or aadhaar is missing from request body",400);
+
+      const user = await userModel.findOne({aadhaar:aadhaar});
+
+      if(!user)
+          throw new ErrorResponse("User not found. Wrong aadhaar number ",400);
+
+      if(user.status==='active')
+        throw new ErrorResponse("User is already in active state ",400);
+
+      const result = await sendAccountActivationMail({username:user.username,text:accountActivationEmailText,email:user.email});
+
+      if(!result)
+          throw new ErrorResponse("Error in sending email for account activation ",500);
+      
+      await userModel.deleteOne({aadhaar:user.aadhaar});
+
+     return res.status(200).json({message:"user account has been re-activated and email has been sent"}); 
 
   } catch (err) {
       next(err);
@@ -661,5 +702,6 @@ export {
     registerAdmin,
     adminForgetPasswordStep1,
     adminForgetPasswordStep2,
-    freezeUser
+    freezeUser,
+    activateUser
 }
