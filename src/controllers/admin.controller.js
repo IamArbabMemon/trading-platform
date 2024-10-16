@@ -1,10 +1,13 @@
-import { accountActivationEmailText, accountFreezeEmailText, rejectionEmailText } from "../mailTemplates.js";
+import { accountActivationEmailText, accountFreezeEmailText, forgetPasswordText, loginOTPText, rejectionEmailText } from "../mailTemplates.js";
+import jwt from 'jsonwebtoken';
 import { adminModel } from "../models/admin.model.js";
 import { tempForForgetPasswordAdminModel } from "../models/tempForForgetPasswordAdmin.model.js";
 import { tempForLoginAdminModel } from "../models/tempForLoginAdmin.model.js";
 import { userModel } from "../models/user.model.js";
 import { ErrorResponse } from "../utils/errorResponse.js"
 import { getUserZID } from "../utils/generateUserZID.js";
+import bcrypt from 'bcryptjs';
+import { generateOTP } from "../utils/generateOTP.js";
 import { sendAccountActivationMail, sendAccountFreezeMail, sendOTPMail, sendRejectionMail, sendWelcomeMail } from "../utils/mailer.js";
 import { getUserByID, registerUserStep1 } from "./user.controllers.js";
 
@@ -15,7 +18,7 @@ const getAllUsers = async(req,res,next)=>{
         if(!req.user)
             throw new ErrorResponse("User is not logged in ",400);
 
-        if(req.user.role!=='admin' || req.user.role!=='moderator')
+        if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
             throw new ErrorResponse("User do not have admin rights to get all users ",400);
 
         const allUsers = await userModel.find();
@@ -36,7 +39,7 @@ const getUsers = async(req,res,next)=>{
       if(!req.user)
         throw new ErrorResponse("admin is not logged in ",400);
 
-      if(req.user.role!=='admin' || req.user.role!=='moderator')
+      if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
         throw new ErrorResponse("User do not have admin rights to get users ",400);  
 
 
@@ -127,7 +130,7 @@ const getUsersByKYC = async(req,res,next)=>{
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-    if(req.user.role!=='admin' || req.user.role!=='moderator')
+    if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
       throw new ErrorResponse("User do not have admin rights to get user info ",400);
 
     let {kycStatus} = req.query;
@@ -211,7 +214,7 @@ const getUsersByStatus = async(req,res,next)=>{
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-    if(req.user.role!=='admin' || req.user.role!=='moderator')
+    if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
       throw new ErrorResponse("User do not have admin rights to get users status ",400);
 
 
@@ -297,7 +300,7 @@ const approveUser = async(req,res,next)=>{
       if(!req.user)
         throw new ErrorResponse("admin is not logged in ",400);
   
-      if(req.user.role!=='admin' || req.user.role!=='moderator')
+      if(req.user.useRole!=='admin' || req.user.userRole!=='moderator')
         throw new ErrorResponse("User do not have admin rights to approve user",400);
   
 
@@ -340,7 +343,7 @@ const rejectUser = async(req,res,next)=>{
       if(!req.user)
         throw new ErrorResponse("admin is not logged in ",400);
   
-      if(req.user.role!=='admin' || req.user.role!=='moderator')
+      if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
         throw new ErrorResponse("User do not have admin rights to reject user ",400);
   
         
@@ -473,10 +476,13 @@ const adminLoginStep2 = async(req,res,next)=>{
 const registerAdmin = async (req, res, next) => {
   try {
 
+    console.log(req.user);
+
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-    if(req.user.role!=='admin')
+
+    if(req.user.userRole!=='admin')
       throw new ErrorResponse("moderator do not have admin rights to add another admin ",400);
 
 
@@ -519,7 +525,7 @@ const registerAdmin = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password,10);
 
-    const newUser = await tempInitialRegistrationModel.create({
+    const newUser = await adminModel.create({
       username,
       email,
       mobileNumber,
@@ -534,7 +540,7 @@ const registerAdmin = async (req, res, next) => {
 
        // Send a success response with the saved user data
     return res.status(201).json({
-      message: 'OTP HAS BEEN SENT SUCCESSFULLY!'
+      message: 'New Admin Registered Successfully'
     });
   } catch (error) {
     // If there are validation errors or other issues, pass them to the error handler middleware
@@ -551,7 +557,7 @@ const adminForgetPasswordStep1 = async(req,res,next)=>{
     const {username} = req.body;
 
     if(!username)
-      throw new ErrorResponse("username is missin from request body",400);
+      throw new ErrorResponse("username is missing from request body",400);
 
     const findUser = await adminModel.findOne({username:username});
 
@@ -584,7 +590,7 @@ const adminForgetPasswordStep2 = async(req,res,next)=>{
 try {
   const {username,OTP,newPassword} = req.body;
 
-    if(!userZID || !OTP || !newPassword)
+    if(!username || !OTP || !newPassword)
       throw new ErrorResponse("Request body data is missing some field",400);
 
   const isOTPCorrect = await tempForForgetPasswordAdminModel.findOne({ username: username, OTP: OTP });
@@ -687,6 +693,8 @@ const activateUser = async(req,res,next)=>{
   }
 
 }
+
+
 
 
 
