@@ -9,19 +9,74 @@ import { getUserZID } from "../utils/generateUserZID.js";
 import bcrypt from 'bcryptjs';
 import { generateOTP } from "../utils/generateOTP.js";
 import { sendAccountActivationMail, sendAccountFreezeMail, sendOTPMail, sendRejectionMail, sendWelcomeMail } from "../utils/mailer.js";
-import { getUserByID, registerUserStep1 } from "./user.controllers.js";
+
 
 
 const getAllUsers = async(req,res,next)=>{
     try {
-        
+        console.log(req.user.userRole);
         if(!req.user)
             throw new ErrorResponse("User is not logged in ",400);
 
-        if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
-            throw new ErrorResponse("User do not have admin rights to get all users ",400);
+        // if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
+            if(req.user.userRole==='user')
+            throw new ErrorResponse("User do not have admin rights to get all users",400);
 
-        const allUsers = await userModel.find();
+        const allUsers =  await userModel.aggregate([
+          {
+            $match: {
+              role:'user'
+            }
+          },
+          {
+            $lookup: {
+              from: "accounts", // The name of the collection to join with
+              localField: "account", // Field from the User collection
+              foreignField: "_id", // Field from the Account collection
+              as: "accountDetails" // Output field for account details
+            }
+          },
+          {
+            $unwind: {
+              path: "$accountDetails",
+              preserveNullAndEmptyArrays: true // Preserve users with no matching account
+            }
+          },
+          {
+            $unwind: {
+              path: "$accountDetails.bankDetails", // Unwind the bankDetails array (if it's an array)
+              preserveNullAndEmptyArrays: true // In case bankDetails is empty or null
+            }
+          },
+          {
+            $project: {
+              username: 1,
+              email: 1,
+              mobileNumber: 1,
+              address: 1,
+              kycStatus: 1,
+              status: 1,
+              role: 1,
+              profilePhoto: 1,
+              profileLocalPath: 1,
+              signature: 1,
+              aadhaar: 1,
+              pan: 1,
+              // Include all the fields from accountDetails, including bankDetails
+              "accountDetails._id": 1,
+              "accountDetails.user": 1,
+              "accountDetails.incomeProof": 1,
+              "accountDetails.role": 1,
+              "accountDetails.createdAt": 1,
+              "accountDetails.updatedAt": 1,
+              "accountDetails.bankDetails.bankName": 1,      // Project bankName from bankDetails
+              "accountDetails.bankDetails.accountNumber": 1, // Project accountNumber from bankDetails
+              "accountDetails.bankDetails.ifsc": 1,          // Project ifsc from bankDetails
+              "accountDetails.bankDetails.micrCode": 1,      // Project micrCode from bankDetails
+              "accountDetails.bankDetails.branchName": 1     // Project branchName from bankDetails
+            }
+          }
+        ]);
 
         return res.status(200).json(allUsers);
 
@@ -29,7 +84,6 @@ const getAllUsers = async(req,res,next)=>{
     } catch (err) {
         next(err);
     }
-
 };
 
 
@@ -39,8 +93,8 @@ const getUsers = async(req,res,next)=>{
       if(!req.user)
         throw new ErrorResponse("admin is not logged in ",400);
 
-      if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
-        throw new ErrorResponse("User do not have admin rights to get users ",400);  
+        if(req.user.userRole==='user')
+        throw new ErrorResponse("User do not have admin rights to get all users",400);
 
 
         let {kycStatus} = req.query;
@@ -130,8 +184,8 @@ const getUsersByKYC = async(req,res,next)=>{
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-    if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
-      throw new ErrorResponse("User do not have admin rights to get user info ",400);
+      if(req.user.userRole==='user')
+      throw new ErrorResponse("User do not have admin rights to get all users",400);
 
     let {kycStatus} = req.query;
         
@@ -213,9 +267,9 @@ const getUsersByStatus = async(req,res,next)=>{
 
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
-
-    if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
-      throw new ErrorResponse("User do not have admin rights to get users status ",400);
+      
+      if(req.user.userRole==='user')
+      throw new ErrorResponse("User do not have admin rights to get all users",400);
 
 
       let {status} = req.query;
@@ -300,8 +354,8 @@ const approveUser = async(req,res,next)=>{
       if(!req.user)
         throw new ErrorResponse("admin is not logged in ",400);
   
-      if(req.user.useRole!=='admin' || req.user.userRole!=='moderator')
-        throw new ErrorResponse("User do not have admin rights to approve user",400);
+       if(req.user.userRole==='user')
+            throw new ErrorResponse("User do not have admin rights to get all users",400);
   
 
         const {aadhaar} = req.body;
@@ -343,8 +397,8 @@ const rejectUser = async(req,res,next)=>{
       if(!req.user)
         throw new ErrorResponse("admin is not logged in ",400);
   
-      if(req.user.userRole!=='admin' || req.user.userRole!=='moderator')
-        throw new ErrorResponse("User do not have admin rights to reject user ",400);
+       if(req.user.userRole==='user')
+            throw new ErrorResponse("User do not have admin rights to get all users",400);
   
         
         const {aadhaar} = req.body;
@@ -624,8 +678,8 @@ const freezeUser = async(req,res,next)=>{
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-    if(req.user.role!=='admin' || req.user.role!=='moderator')
-      throw new ErrorResponse("User do not have admin rights to reject user ",400);
+      if(req.user.userRole==='user')
+      throw new ErrorResponse("User do not have rights to freeze ",400);
 
       
       const {status,aadhaar} = req.body;
@@ -662,8 +716,8 @@ const activateUser = async(req,res,next)=>{
     if(!req.user)
       throw new ErrorResponse("admin is not logged in ",400);
 
-  if(req.user.role!=='admin' || req.user.role!=='moderator')
-      throw new ErrorResponse("User do not have admin rights to reject user ",400);
+      if(req.user.userRole==='user')
+      throw new ErrorResponse("User do not have rights to activate users",400);
 
       
       const {status,aadhaar} = req.body;
@@ -694,6 +748,25 @@ const activateUser = async(req,res,next)=>{
 
 }
 
+const getAllmoderators = async(req,res,next)=>{
+  try {
+      console.log(req.user.userRole);
+      if(!req.user)
+          throw new ErrorResponse("Admin or moderator is not logged in ",400);
+
+          if(req.user.userRole==='user')
+          throw new ErrorResponse("User do not have admin rights to get all moderators",400);
+
+
+      const allUsers = await adminModel.find({role:'moderator'});
+
+      return res.status(200).json(allUsers);
+
+
+  } catch (err) {
+      next(err);
+  }
+};
 
 
 
@@ -711,5 +784,6 @@ export {
     adminForgetPasswordStep1,
     adminForgetPasswordStep2,
     freezeUser,
-    activateUser
+    activateUser,
+    getAllmoderators
 }

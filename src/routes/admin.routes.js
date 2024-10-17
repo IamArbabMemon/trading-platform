@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import { checkAuthentication } from '../middlewares/authentication.middleware.js';
-import { activateUser, adminForgetPasswordStep1, adminForgetPasswordStep2, adminLoginStep1, adminLoginStep2, approveUser, freezeUser, getAllUsers,getUsers, getUsersByKYC, getUsersByStatus, registerAdmin, rejectUser } from '../controllers/admin.controller.js';
+import { activateUser, adminForgetPasswordStep1, adminForgetPasswordStep2, adminLoginStep1, adminLoginStep2, approveUser, freezeUser, getAllmoderators, getAllUsers,getUsers, getUsersByKYC, getUsersByStatus, registerAdmin, rejectUser } from '../controllers/admin.controller.js';
 
 const router = Router();
 
@@ -25,6 +25,7 @@ router.route('/freezeUserAccount').post(checkAuthentication,freezeUser);
 
 router.route('/activateUserAccount').post(checkAuthentication,activateUser);
 
+router.route('/getAllModerators').get(checkAuthentication,getAllmoderators);
 
 
 
