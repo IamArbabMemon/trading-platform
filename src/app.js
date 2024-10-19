@@ -1,6 +1,7 @@
 import express from 'express';
 import { router as userRouter} from './routes/user.routes.js';
 import {router as adminRouter } from './routes/admin.routes.js'
+import {router as stockRouter} from './routes/stockTransaction.routes.js'
 import cors from 'cors'
 import cookieParser from 'cookie-parser';
 import { errorHandler } from './middlewares/errorHandling.middleware.js';
@@ -38,6 +39,8 @@ app.use('/api/v1/user',userRouter);
 
 app.use('/api/v1/admin',adminRouter);
 
+app.use('/api/v1/stocks',stockRouter);
+
 app.get('/get',(req,res)=>{
     console.log("hitting get token");
 
@@ -46,9 +49,6 @@ app.get('/get',(req,res)=>{
    });
     
     
-
-
-// app.use('/hello',(req,res)=>res.send())
 
 app.use(errorHandler);
 
