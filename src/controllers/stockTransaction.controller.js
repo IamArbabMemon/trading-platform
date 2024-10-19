@@ -25,6 +25,7 @@ const registerStockTransaction = async(req,res,next)=>{
         throw new ErrorResponse("user not found",400);
 
        const transaction = await stockTransactionModel.create({
+        userId:req.user.userObjectID,
         stockName:stockName,
         transactionType:transactionType,
         stockQuantity:stockQuantity,
