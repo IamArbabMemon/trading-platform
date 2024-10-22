@@ -181,13 +181,40 @@ const sendAccountActivationMail = async (data) => {
 };
 
 
+const sendRemoveMail = async (data) => {
+    let textToSend = `DEAR ${data.username} ${data.text}`;
+    
+    try {
+        const info = await transporter.sendMail({
+            from: {
+                name: `MANGAL KESHAV TRADING PLATFORM`,
+                address: process.env.MAILER_EMAIL
+            }, // sender address
+            to: data.email, // list of receivers
+            subject: "MEMBERSHIP CANCELLED", // Subject line
+            text: textToSend, // plain text body
+            html: "" // html body
+        });
+
+        return info;
+
+    } catch (err) {
+        console.log("FAILED TO SEND EMAIL", err);
+        return null;
+    }
+};
+
+
+
+
 
 export {
     sendOTPMail,
     sendWelcomeMail,
     sendRejectionMail,
     sendAccountFreezeMail,
-    sendAccountActivationMail
+    sendAccountActivationMail,
+    sendRemoveMail
 };
 
 

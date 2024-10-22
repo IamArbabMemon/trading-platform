@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import { checkAuthentication } from '../middlewares/authentication.middleware.js';
-import { activateUser, adminForgetPasswordStep1, adminForgetPasswordStep2, adminLoginStep1, adminLoginStep2, approveUser, freezeUser, getAllmoderators, getAllUsers,getUsers, getUsersByKYC, getUsersByStatus, registerAdmin, rejectUser } from '../controllers/admin.controller.js';
+import { activateUser, adminForgetPasswordStep1, adminForgetPasswordStep2, adminLoginStep1, adminLoginStep2, approveUser, freezeUser, getAllmoderators, getAllUsers,getUsers, getUsersByKYC, getUsersByStatus, registerAdmin, rejectUser, removeModerator, removeUser } from '../controllers/admin.controller.js';
 
 const router = Router();
 
@@ -9,6 +9,10 @@ router.route('/getAllUsers').get(checkAuthentication,getAllUsers);
 router.route('/getUsers').get(checkAuthentication,getUsers);
 
 router.route('/approveUser').post(checkAuthentication,approveUser);
+
+router.route('/removeUser').post(checkAuthentication,removeUser);
+
+router.route('/removeModerator').post(checkAuthentication,removeModerator);
 
 router.route('/rejectUser').post(checkAuthentication,rejectUser);
 

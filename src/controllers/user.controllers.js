@@ -562,7 +562,6 @@ const userLogout = async(req,res,next)=>{
   try{
 
 
-
         console.log("logging out");
 
 

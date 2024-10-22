@@ -8,7 +8,7 @@ import { ErrorResponse } from "../utils/errorResponse.js"
 import { getUserZID } from "../utils/generateUserZID.js";
 import bcrypt from 'bcryptjs';
 import { generateOTP } from "../utils/generateOTP.js";
-import { sendAccountActivationMail, sendAccountFreezeMail, sendOTPMail, sendRejectionMail, sendWelcomeMail } from "../utils/mailer.js";
+import { sendAccountActivationMail, sendAccountFreezeMail, sendOTPMail, sendRejectionMail, sendRemoveMail, sendWelcomeMail } from "../utils/mailer.js";
 
 
 
@@ -594,7 +594,7 @@ const registerAdmin = async (req, res, next) => {
 
        // Send a success response with the saved user data
     return res.status(201).json({
-      message: 'New Admin Registered Successfully'
+      message: 'New Moderator Registered Successfully'
     });
   } catch (error) {
     // If there are validation errors or other issues, pass them to the error handler middleware
@@ -769,6 +769,75 @@ const getAllmoderators = async(req,res,next)=>{
 };
 
 
+const removeUser = async(req,res,next)=>{
+  try {
+
+    if(!req.user)
+      throw new ErrorResponse("admin is not logged in ",400);
+
+     if(req.user.userRole==='user')
+          throw new ErrorResponse("User do not have admin rights to remove users",400);
+
+      
+      const {aadhaar} = req.body;
+
+      if(!aadhaar)
+          throw new ErrorResponse("Adhaar number is missing",400);
+
+      const user = await userModel.findOne({aadhaar:aadhaar});
+
+      if(!user)
+          throw new ErrorResponse("User not found. Wrong aadhaar number ",400);
+
+      const result = await sendRemoveMail({username:user.username,text:rejectionEmailText,email:user.email});
+
+      if(!result)
+          throw new ErrorResponse("Error in sending email for Rejection ",500);
+      
+      await userModel.deleteOne({aadhaar:user.aadhaar});
+
+     return res.status(200).json({message:"user has been removed from the database and email has been sent"}); 
+
+  } catch (err) {
+      next(err);
+  }
+}
+
+const removeModerator = async(req,res,next)=>{
+  try {
+
+    if(!req.user)
+      throw new ErrorResponse("admin is not logged in ",400);
+
+     if(req.user.userRole!=='admin')
+          throw new ErrorResponse("Moderator do not have admin rights to remove moderators",400);
+
+      
+      const {aadhaar} = req.body;
+
+      if(!aadhaar)
+          throw new ErrorResponse("Adhaar number is missing",400);
+
+      const user = await adminModel.findOne({aadhaar:aadhaar});
+
+      if(!user)
+          throw new ErrorResponse("Moderator not found. Wrong aadhaar number ",400);
+
+      // const result = await sendRemoveMail({username:user.username,text:rejectionEmailText,email:user.email});
+
+      // if(!result)
+      //     throw new ErrorResponse("Error in sending email for Rejection ",500);
+      
+      await adminModel.deleteOne({aadhaar:user.aadhaar});
+
+     return res.status(200).json({message:"moderator has been removed from the database"}); 
+
+  } catch (err) {
+      next(err);
+  }
+}
+
+
 
 
 export {
@@ -785,5 +854,7 @@ export {
     adminForgetPasswordStep2,
     freezeUser,
     activateUser,
-    getAllmoderators
+    getAllmoderators,
+    removeUser,
+    removeModerator
 }
