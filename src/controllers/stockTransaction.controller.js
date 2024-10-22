@@ -54,76 +54,72 @@ const registerStockTransaction = async(req,res,next)=>{
 };
 
 
+const buyStocks = async(req,res,next)=>{
+  try{
 
-// const getUserStockTransaction = async (req, res, next) => {
-//   try {
-//     if (!req.user) {
-//       throw new ErrorResponse("User is not logged in", 400);
-//     }
+    console.log(req.body);
 
-//     // Log the userObjectID for debugging
-//     console.log('User ObjectID:', req.user.userObjectID);
+    const user = req.user;
 
-//     // Ensure userObjectID is an ObjectId
-//     const userObjectId = new mongoose.Types.ObjectId(req.user.userObjectID);
+    if(!user)
+        throw new ErrorResponse("user is not logged in ",400);
 
-//     const usersTransactions = await stockTransactionModel.aggregate([
-//       {
-//         $match: {
-//           userId: userObjectId // Ensure correct ObjectId matching
-//         }
-//       },
-//       {
-//         $lookup: {
-//           from: "users",
-//           localField: "userId",
-//           foreignField: "_id",
-//           as: "userDetails"
-//         }
-//       },
-//       {
-//         $unwind: {
-//           path: "$userDetails",
-//           preserveNullAndEmptyArrays: true
-//         }
-//       },
-//       {
-//         $project: {
-//           stockName: 1,
-//           transactionType: 1,
-//           stockQuantity: 1,
-//           pricePerUnit: 1,
-//           totalAmount: 1,
-//           transactionDate: 1,
-//           transactionFee: 1,
-//           status: 1,
-//           // User details
-//           "userDetails.username": 1,
-//           "userDetails.email": 1,
-//           "userDetails.mobileNumber": 1,
-//           "userDetails.address": 1,
-//           "userDetails.kycStatus": 1,
-//           "userDetails.status": 1,
-//           "userDetails.role": 1,
-//           "userDetails.profilePhoto": 1,
-//           "userDetails.profileLocalPath": 1,
-//           "userDetails.signature": 1,
-//           "userDetails.aadhaar": 1,
-//           "userDetails.pan": 1
-//         }
-//       }
-//     ]);
+        if(user.userRole!=='user')
+        throw new ErrorResponse("only user has the rights to buy and sell",400);
 
-//     if (!usersTransactions.length) {
-//       return res.status(404).json({ message: "No stock transactions found for this user" });
-//     }
+        const {stockName ,transactionType ,stockQuantity ,pricePerUnit ,totalAmount ,transactionDate} = req.body; 
 
-//     return res.status(200).json(usersTransactions);
+        if (!stockName || !transactionType || !stockQuantity || !pricePerUnit || !totalAmount) {
+            throw new ErrorResponse("Please provide all the required fields",400);
+          }
+       
+       
+        if(user.kycStatus==='pending')
+        throw new ErrorResponse("user is not approved yet",400);  
 
-//   } catch (err) {
-//     next(err);
-//   }
-// };
+        if(user.status==='frozen')
+        throw new ErrorResponse("user status is frozen",400);  
+
+
+      
+let userStockDetails = await stockTransactionModel.findOne({
+  stockName: stockName,
+  userId: mongoose.Types.ObjectId(user.userObjectID) // Convert to ObjectId if needed
+});
+
+        if(!userStockDetails){
+         userStockDetails =  await stockTransactionModel.create({
+            userId:req.user.userObjectID,
+            stockName:stockName,
+            transactionType:transactionType,
+            stockQuantity:stockQuantity,
+            pricePerUnit:pricePerUnit,
+            totalAmount:totalAmount,
+           });
+    
+        }else{
+
+          userStockDetails = await stockTransactionModel.findOneAndUpdate(
+            { _id: user.userObjectID }, // Filter condition
+            { $inc: { stock: stockQuantity } }, // Increment the stock field
+            { new: true } // Return the updated document
+          );
+          
+
+        }
+       
+        
+       if(!userStockDetails)
+        throw new ErrorResponse("Error occured registering transaction in database",500);
+
+       return res.status(200).json({message:"Action has been completed",data:{stockName:userStockDetails.stockName,stockQuantity:userStockDetails.stockQuantity}});
+
+}catch(err){
+    next(err)
+}
+
+};
+
 
 
 const getUserStockTransaction = async (req, res, next) => {
@@ -153,10 +149,69 @@ const getUserStockTransaction = async (req, res, next) => {
 
 
 
+const sellStocks = async(req,res,next)=>{
+  try{
+
+    console.log(req.body);
+
+    const user = req.user;
+
+    if(!user)
+        throw new ErrorResponse("user is not logged in ",400);
+
+        if(user.userRole!=='user')
+        throw new ErrorResponse("only user has the rights to buy and sell",400);
+
+        const {stockName ,transactionType ,stockQuantity ,pricePerUnit ,totalAmount ,transactionDate} = req.body; 
+
+        if (!stockName || !transactionType || !stockQuantity || !pricePerUnit || !totalAmount) {
+            throw new ErrorResponse("Please provide all the required fields",400);
+          }
+       
+       
+        if(user.kycStatus==='pending')
+        throw new ErrorResponse("user is not approved yet",400);  
+
+        if(user.status==='frozen')
+        throw new ErrorResponse("user status is frozen",400);  
+
+
+      
+let userStockDetails = await stockTransactionModel.findOne({
+  stockName: stockName,
+  userId: mongoose.Types.ObjectId(user.userObjectID) // Convert to ObjectId if needed
+});
+
+
+
+     if(!userStockDetails)
+      throw new ErrorResponse("No Stocks available to sell",404);  
+
+      if(userStockDetails.stockQuantity<stockQuantity)
+        throw new ErrorResponse("available stock quantity is less than selling quantity",404);  
+
+
+          userStockDetails = await stockTransactionModel.findOneAndUpdate(
+            { _id: user.userObjectID }, // Filter condition
+            { $inc: { stock: -stockQuantity } }, // Increment the stock field
+            { new: true } // Return the updated document
+          );
+          
+
+       return res.status(200).json({message:"Action has been completed",data:{stockName:userStockDetails.stockName,stockQuantity:userStockDetails.stockQuantity}});
+
+}catch(err){
+    next(err)
+}
+
+};
+
+
 
 export {
-    registerStockTransaction,
-    getUserStockTransaction
+    buyStocks,
+    getUserStockTransaction,
+    sellStocks
 }
 
 

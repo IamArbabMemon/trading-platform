@@ -547,7 +547,7 @@ const userLoginStep2 = async(req,res,next)=>{
         
       await tempForLoginModel.deleteMany({userZID:userZID});
 
-     return res.status(200).json({message:"Access token has been set",token:token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString(),profilePic:detailedUser.profilePhoto}});
+     return res.status(200).json({message:"Access token has been set",token:token, userData:{username:detailedUser.username,userRole:detailedUser.role,userZID:detailedUser.userZID,userObjectID:detailedUser._id.toString(),profilePic:detailedUser.profilePhoto,kycStatus:detailedUser.kycStatus,status:detailedUser.status}});
 
        
   } catch (err) {

@@ -20,7 +20,7 @@ const stockTransactionSchema = new mongoose.Schema({
   stockQuantity: {
     type: Number,
     required: false,
-    min: 1, // Ensure at least 1 stock is bought/sold
+    min:0
   },
 
   pricePerUnit: {
@@ -32,7 +32,7 @@ const stockTransactionSchema = new mongoose.Schema({
   totalAmount: {
     type: Number,
     required: true,
-    min: 0.01,
+    min:0.01
   },
 
   transactionDate: {
@@ -42,9 +42,7 @@ const stockTransactionSchema = new mongoose.Schema({
 
   transactionFee: {
     type: Number,
-    required: false,
-    default: 0,
-    min: 0,
+    required: false
   },
 
   status: {
