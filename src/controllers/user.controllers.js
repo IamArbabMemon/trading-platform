@@ -538,7 +538,9 @@ const userLoginStep2 = async(req,res,next)=>{
           username: detailedUser.username,
           userRole: detailedUser.role,
           userZID: detailedUser.userZID,
-          userObjectID : detailedUser._id.toString()
+          userObjectID : detailedUser._id.toString(),
+          kycStatus : detailedUser.kycStatus,
+          status:detailedUser.status
         },
         process.env.JWT_SECRET_KEY,
         { expiresIn: '1h' } // Set the token to expire in 1 hour

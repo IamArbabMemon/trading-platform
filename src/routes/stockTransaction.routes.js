@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import { checkAuthentication } from '../middlewares/authentication.middleware.js';
-import { buyStocks, getUserStockTransaction, registerStockTransaction, sellStocks } from '../controllers/stockTransaction.controller.js';
+import { buyStocks, getUserStockTransaction, sellStocks } from '../controllers/stockTransaction.controller.js';
 
 const router = Router();
 
