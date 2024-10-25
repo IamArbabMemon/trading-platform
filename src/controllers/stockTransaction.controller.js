@@ -82,22 +82,18 @@ const buyStocks = async(req,res,next)=>{
 
 
       
-let userStockDetails = await stockTransactionModel.findOne({
-  stockName: stockName,
-  userId: user.userObjectID//mongoose.Types.ObjectId(user.userObjectID) // Convert to ObjectId if needed
-});
-
-        if(!userStockDetails){
-         userStockDetails =  await stockTransactionModel.create({
+        const userStockDetails =  await stockTransactionModel.create({
+        
             userId:user.userObjectID,
             stockName:stockName,
             transactionType:transactionType,
             stockQuantity:stockQuantity,
             pricePerUnit:pricePerUnit,
             totalAmount:totalAmount
-           });
+        
+          });
     
-        }else{
+        
 
           // userStockDetails = await stockTransactionModel.findOneAndUpdate(
           //   { _id: user.userObjectID },
@@ -105,17 +101,14 @@ let userStockDetails = await stockTransactionModel.findOne({
           //   { $inc: { stockQuantity: stockQuantity } }, // Increment the stock field
           //   { new: true } // Return the updated document
           // );
-          userStockDetails = await stockTransactionModel.findOneAndUpdate(
-            { userId: user.userObjectID, stockName: stockName }, // Filter by userId and stockName
-            { 
-              $inc: { stockQuantity: stockQuantity } // Increment the stockQuantity
-            },
-            { new: true } // Return the updated document
-          );
+          // userStockDetails = await stockTransactionModel.findOneAndUpdate(
+          //   { userId: user.userObjectID, stockName: stockName }, // Filter by userId and stockName
+          //   { 
+          //     $inc: { stockQuantity: stockQuantity } // Increment the stockQuantity
+          //   },
+          //   { new: true } // Return the updated document
+          // );
           
-          
-        }
-  
 
        return res.status(200).json({message:"Action has been completed",data:{stockName:userStockDetails.stockName,stockQuantity:userStockDetails.stockQuantity}});
 
@@ -139,7 +132,7 @@ const getUserStockTransaction = async (req, res, next) => {
    throw new ErrorResponse("admin or moderator you do not have rights", 400);
 
 
-      const usersTransactions = await stockTransactionModel.find({userId:req.user.userObjectID});
+    const usersTransactions = await stockTransactionModel.find({userId:req.user.userObjectID});
 
     if (!usersTransactions)
     throw new ErrorResponse("not have any transaction history", 404);
@@ -182,29 +175,37 @@ const sellStocks = async(req,res,next)=>{
 
 
       
-let userStockDetails = await stockTransactionModel.findOne({
-  stockName: stockName,
-  userId: user.userObjectID//mongoose.Types.ObjectId(user.userObjectID) // Convert to ObjectId if needed
-});
+// let userStockDetails = await stockTransactionModel.findOne({
+//   stockName: stockName,
+//   userId: user.userObjectID//mongoose.Types.ObjectId(user.userObjectID) // Convert to ObjectId if needed
+// });
 
-console.log(userStockDetails);
+// console.log(userStockDetails);
 
-     if(!userStockDetails)
-      throw new ErrorResponse("This stock is not available for sale. Kindly purchase it first.",404);  
+    //  if(!userStockDetails)
+    //   throw new ErrorResponse("This stock is not available for sale. Kindly purchase it first.",404);  
 
-      if(userStockDetails.stockQuantity<stockQuantity)
-        throw new ErrorResponse("The available stock quantity is less than the quantity you wish to sell.",404);  
+    //   if(userStockDetails.stockQuantity<stockQuantity)
+    //     throw new ErrorResponse("The available stock quantity is less than the quantity you wish to sell.",404);  
 
 
-        userStockDetails = await stockTransactionModel.findOneAndUpdate(
-          { userId: user.userObjectID, stockName: stockName }, // Filter by userId and stockName
-          { 
-            $inc: { stockQuantity: -stockQuantity } // Increment the stockQuantity
-          },
-          { new: true } // Return the updated document
-        );
-                  
-
+        // userStockDetails = await stockTransactionModel.findOneAndUpdate(
+        //   { userId: user.userObjectID, stockName: stockName }, // Filter by userId and stockName
+        //   { 
+        //     $inc: { stockQuantity: -stockQuantity } // Increment the stockQuantity
+        //   },
+        //   { new: true } // Return the updated document
+        // );
+    
+        const userStockDetails =  await stockTransactionModel.create({
+          userId:user.userObjectID,
+          stockName:stockName,
+          transactionType:transactionType,
+          stockQuantity:stockQuantity,
+          pricePerUnit:pricePerUnit,
+          totalAmount:totalAmount
+        });
+  
        return res.status(200).json({message:"Action has been completed",data:{stockName:userStockDetails.stockName,stockQuantity:userStockDetails.stockQuantity}});
 
 }catch(err){
