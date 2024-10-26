@@ -6,6 +6,22 @@ const stockTransactionSchema = new mongoose.Schema({
     ref: 'User', // Reference to the User model
     required: false,
   },
+  userPan: {
+    type: String,
+    unique: true,
+    trim: true,
+    // required:true,
+    sparse:true,
+    validate: {
+      validator: function (v) {
+
+        return v ? /[A-Z]{5}[0-9]{4}[A-Z]{1}/.test(v) : true; // PAN number format or can be empty initially
+      },
+      message: props => `${props.value} is not a valid PAN number!`,
+    },
+    default: undefined
+  },
+
   stockName : {
     type: String,
     required: false,

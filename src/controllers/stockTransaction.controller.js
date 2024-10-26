@@ -214,12 +214,32 @@ const sellStocks = async(req,res,next)=>{
 
 };
 
+const getUserTransactionHistoryAdmin = async(req,res,next)=>{
+  try {
+    
+    const {pan} = req.body;
 
+    if(req.user.userRole==='user')
+      throw new ErrorResponse("do not have admin rights to view user stock transaction history",400);
+
+    if(!pan)
+      throw new ErrorResponse("Pan number is missing",400);
+
+    const history = await stockTransactionModel.find({userPan:pan});
+
+
+    return res.status(200).json({message:"user stock history has been fetched",data:history});
+
+  } catch (err) {
+    next(err);
+  }
+}
 
 export {
     buyStocks,
     sellStocks,
-    getUserStockTransaction
+    getUserStockTransaction,
+    getUserTransactionHistoryAdmin
 }
 
 
