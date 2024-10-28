@@ -89,8 +89,8 @@ const buyStocks = async(req,res,next)=>{
             transactionType:transactionType,
             stockQuantity:stockQuantity,
             pricePerUnit:pricePerUnit,
-            totalAmount:totalAmount
-        
+            totalAmount:totalAmount,
+            userPan:user.pan
           });
     
         
@@ -203,7 +203,8 @@ const sellStocks = async(req,res,next)=>{
           transactionType:transactionType,
           stockQuantity:stockQuantity,
           pricePerUnit:pricePerUnit,
-          totalAmount:totalAmount
+          totalAmount:totalAmount,
+          userPan:user.pan
         });
   
        return res.status(200).json({message:"Action has been completed",data:{stockName:userStockDetails.stockName,stockQuantity:userStockDetails.stockQuantity}});
