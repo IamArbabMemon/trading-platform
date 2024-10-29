@@ -8,10 +8,10 @@ const stockTransactionSchema = new mongoose.Schema({
   },
   userPan: {
     type: String,
-    unique: true,
+    unique: false,
     trim: true,
     // required:true,
-    sparse:true,
+    // sparse:true,
     validate: {
       validator: function (v) {
 

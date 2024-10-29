@@ -1,6 +1,6 @@
 import {Router} from 'express';
 import { checkAuthentication } from '../middlewares/authentication.middleware.js';
-import { buyStocks, getUserStockTransaction, getUserTransactionHistoryAdmin, sellStocks } from '../controllers/stockTransaction.controller.js';
+import { buyStocks, getUserStockTransaction, getUserTransactionHistoryAdmin, getUsersByKYCAndStatus, sellStocks } from '../controllers/stockTransaction.controller.js';
 
 const router = Router();
 
@@ -12,5 +12,6 @@ router.route('/getUserStockTransactionDetails').get(checkAuthentication,getUserS
 
 router.route('/getUserStockTransactions').get(checkAuthentication,getUserTransactionHistoryAdmin);
 
+router.route('/getUserbyKycStatusAndStatus').get(checkAuthentication,getUsersByKYCAndStatus);
 
 export {router};
